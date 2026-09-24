@@ -15,6 +15,7 @@ this bio: "I enjoy working on both front-end and back-end, and I am learning Rea
 - Projects section with id="projects": lists these items: NBA Player Stats Tracker, a command-line tool for looking up player stats; Autonomous Navigational Robot, a robot that finds its own way around; LeetCode Assistant (planned), a tool to help with studying practice problems.
 - Social link: GitHub (https://github.com/shaunmccauley) MUST open in a new tab
 (target="_blank").
+- The page background MUST be dark navy (#1b2a41) with white text. 
 ## 4. Acceptance Checklist
 - [x] Valid semantic HTML5: the page uses <header>, <main>, and <footer>.
 - [x] The avatar image has width, height, and alt attributes.
