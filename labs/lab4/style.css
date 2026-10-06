@@ -96,11 +96,39 @@ h1 {
 .button {
   display: inline-block;
   padding: 0.85rem 1.5rem;
+  border: 0.0625rem solid transparent;
   border-radius: 999px;
   background: var(--button-bg);
   color: var(--button-text);
+  font: inherit;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.button:hover {
+  background: #c8d5e5;
+}
+
+.button:focus-visible {
+  outline: 0.1875rem solid #f2c14e;
+  outline-offset: 0.1875rem;
+}
+
+.button:active {
+  background: #8fa8c4;
+  color: #102039;
+  transform: translateY(0.125rem);
+}
+
+.button:disabled {
+  background: #718096;
+  color: #cbd5e0;
+  border-color: #718096;
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
 }
 
 .hero-visual {
@@ -126,7 +154,7 @@ h1 {
 .project-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem; /* hand-edited by SM */ 
+  gap: 0.75rem; /* hand-edited by SM */
 }
 
 .card {

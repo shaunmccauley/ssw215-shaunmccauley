@@ -39,10 +39,10 @@ disabled attribute, and MUST NOT look clickable.
 - [x] No inline style="..." attributes anywhere in index.html.
 - [x] No ID selectors (#something) in style.css.
 - [x] No horizontal scrollbar when the browser is narrowed to 375px.
-- [ ] Hovering the primary button visibly changes it.
-- [ ] Tabbing to the primary button shows a clear focus ring.
-- [ ] Holding the mouse down on it looks different again.
-- [ ] The disabled button looks unavailable and does not react to hover.
+- [x] Hovering the primary button visibly changes it.
+- [x] Tabbing to the primary button shows a clear focus ring.
+- [x] Holding the mouse down on it looks different again.
+- [x] The disabled button looks unavailable and does not react to hover.
 
 ## 5. Audit Protocol
 - Inspect the generated code line by line with `git diff --staged` before committing.
