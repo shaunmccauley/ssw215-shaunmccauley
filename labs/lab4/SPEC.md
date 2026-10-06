@@ -20,16 +20,16 @@ this bio: "I enjoy working on both front-end and back-end, and I am learning Rea
 - Social link: GitHub (https://github.com/shaunmccauley) MUST open in a new tab
 (target="_blank").
 - The page background MUST be dark navy (#1b2a41) with white text.
-- The page MUST use semantic landmarks: one <header>, one <nav>, one <main>, one
-<footer>, and each content group inside its own <section> with a heading.
-- There MUST be exactly one <h1>, and heading levels MUST NOT skip (h1 then h2 then h3).
-- <nav> MUST contain a link to the projects section and a link to my GitHub profile.
-- Each project MUST be an <article class="card"> inside a container that uses display:
+- The page MUST use semantic landmarks: one `<header>`, one `<nav>`, one `<main>`, one
+`<footer>`, and each content group inside its own `<section>` with a heading.
+- There MUST be exactly one `<h1>`, and heading levels MUST NOT skip (h1 then h2 then h3).
+- `<nav>` MUST contain a link to the projects section and a link to my GitHub profile.
+- Each project MUST be an `<article class="card">` inside a container that uses display:
 flex, flex-wrap: wrap and gap. 
 
 ## 4. Acceptance Checklist
-- [x] Exactly one <h1>, one <header>, one <nav>, one <main>, one <footer>.
-- [x] Every project is an <article class="card"> inside a flex container with gap.
+- [x] Exactly one `<h1>`, one `<header>`, one `<nav>`, one `<main>`, one `<footer>`.
+- [x] Every project is an `<article class="card">` inside a flex container with gap.
 - [x] style.css begins with the box-sizing reset.
 - [x] No inline style="..." attributes anywhere in index.html.
 - [x] No ID selectors (#something) in style.css.
