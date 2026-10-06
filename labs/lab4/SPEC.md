@@ -26,6 +26,7 @@ this bio: "I enjoy working on both front-end and back-end, and I am learning Rea
 - <nav> MUST contain a link to the projects section and a link to my GitHub profile.
 - Each project MUST be an <article class="card"> inside a container that uses display:
 flex, flex-wrap: wrap and gap. 
+
 ## 4. Acceptance Checklist
 - [x] Exactly one <h1>, one <header>, one <nav>, one <main>, one <footer>.
 - [x] Every project is an <article class="card"> inside a flex container with gap.
