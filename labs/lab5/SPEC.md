@@ -44,6 +44,8 @@ adding the class "hidden", and the count MUST update immediately — no button, 
 reload.
 - Emptying the box MUST bring every card back.
 - style.css MUST define .hidden { display: none; }.
+- Each time the filter runs, app.js MUST print the titles of the projects that are still
+visible to the console with console.log.
 
 ## 4. Acceptance Checklist
 - [x] app.js is loaded from `<head>` with defer, and index.html has no inline onclick and
@@ -53,6 +55,8 @@ no code inside a `<script>` tag.
 - [x] Emptying the box brings every card back.
 - [x] app.js contains no .style assignments — hiding is done with the "hidden" class.
 - [x] The DevTools Console shows no red errors when the page loads.
+- [ ] Typing in the filter prints the matching project titles in the Console, and the
+list gets shorter as I type.
 
 ## 5. Audit Protocol
 - Inspect the generated code line by line with `git diff --staged` before committing.
