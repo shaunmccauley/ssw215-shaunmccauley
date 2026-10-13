@@ -55,7 +55,7 @@ no code inside a `<script>` tag.
 - [x] Emptying the box brings every card back.
 - [x] app.js contains no .style assignments — hiding is done with the "hidden" class.
 - [x] The DevTools Console shows no red errors when the page loads.
-- [ ] Typing in the filter prints the matching project titles in the Console, and the
+- [x] Typing in the filter prints the matching project titles in the Console, and the
 list gets shorter as I type.
 
 ## 5. Audit Protocol
