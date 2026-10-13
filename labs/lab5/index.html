@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shaun McCauley | Portfolio</title>
+    <script src="./app.js" defer></script>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
@@ -35,16 +36,21 @@
       <section id="projects" class="projects-section" aria-labelledby="projects-heading">
         <div class="container">
           <h2 id="projects-heading">Projects</h2>
+          <div class="project-controls">
+            <label for="filter-input">Filter projects</label>
+            <input id="filter-input" type="text" />
+            <p id="project-count" aria-live="polite">Showing 3 of 3 projects</p>
+          </div>
           <div class="project-grid">
-            <article class="card">
+            <article class="card project-card">
               <h3>NBA Player Stats Tracker</h3>
               <p>a command-line tool for looking up player stats</p>
             </article>
-            <article class="card">
+            <article class="card project-card">
               <h3>Autonomous Navigational Robot</h3>
               <p>a robot that finds its own way around</p>
             </article>
-            <article class="card featured"> <!-- hand-edited by SM -->
+            <article class="card project-card featured">
               <h3>LeetCode Assistant (planned)</h3>
               <p>a tool to help with studying practice problems</p>
             </article>
