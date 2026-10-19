@@ -520,8 +520,36 @@ main.page-shell {
   }
 
   .form-panel {
-    position: sticky;
-    top: 1.5rem;
+    min-height: 0;
+    max-height: 42rem;
+    overflow: hidden;
+  }
+
+  .entries-panel {
+    min-height: 0;
+    max-height: 42rem;
+    overflow: hidden;
+  }
+
+  .form-panel,
+  .entries-panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-scroll {
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 0.75rem;
+  }
+
+  .form-scroll,
+  .entries-scroll {
+    flex: 1 1 auto;
+  }
+
+  .form-scroll {
+    margin-right: -1rem;
   }
 }
 

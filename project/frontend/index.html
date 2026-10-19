@@ -37,7 +37,8 @@
           <p class="eyebrow">Keep the reasoning</p>
           <h2 id="new-reflection-heading">New reflection</h2>
         </div>
-        <form class="reflection-form" id="reflection-form" data-mode="add" novalidate>
+        <div class="panel-scroll form-scroll">
+          <form class="reflection-form" id="reflection-form" data-mode="add" novalidate>
           <div class="field-group">
             <label for="problem-name">Problem name <span aria-hidden="true">*</span></label>
             <input id="problem-name" name="problem_name" type="text" maxlength="100" required>
@@ -106,7 +107,8 @@
             <button class="button button-primary" id="submit-entry" type="submit">Add entry</button>
             <button class="button button-secondary" id="cancel-edit" type="button" hidden>Cancel</button>
           </div>
-        </form>
+          </form>
+        </div>
       </section>
 
       <section class="entries-panel" aria-labelledby="entries-heading">
@@ -117,8 +119,10 @@
           </div>
           <p class="entry-count" id="entry-count">0 entries</p>
         </div>
-        <div class="entries-list" id="entries-list" aria-live="polite">
-          <p class="empty-state" id="empty-state">No entries yet. Add your first reflection using the form.</p>
+        <div class="panel-scroll entries-scroll">
+          <div class="entries-list" id="entries-list" aria-live="polite">
+            <p class="empty-state" id="empty-state">No entries yet. Add your first reflection using the form.</p>
+          </div>
         </div>
       </section>
     </section>
