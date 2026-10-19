@@ -22,7 +22,7 @@
 - mock_data.json MUST contain at least 5 entries using exactly these fields: id, problem_name, source, topic, difficulty, result, time_minutes, approach, struggles, ai_review, created_at.
 - In mock_data.json, at least 2 entries MUST have an ai_review object, at least 2 MUST have ai_review: null, at least 1 MUST have an empty approach, and the entries MUST include all three results (Solved, Partial, Failed).
 - An ai_review object MUST have exactly four string fields: key_concept, knowledge_gap, takeaway, area_for_review.
-- New entry ids MUST be max(existing ids) + 1 (or 1 if the list is empty). Ids MUST NOT be reused within a session.
+- New entry ids MUST be max(existing ids) + 1 (or 1 if the list is empty).
 ## 3. UI Content & Interface Contract
 - The page MUST use semantic landmarks: one `<header>`, one `<main>`, one `<footer>`, and each content group inside its own `<section>` with a heading.
 - There MUST be exactly one `<h1>`, and heading levels MUST NOT skip (h1 then h2 then h3).
