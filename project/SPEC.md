@@ -1,0 +1,81 @@
+## SPEC: Interview Reflections Dashboard
+## 1. Purpose & Scope
+- A single-user browser dashboard where a college student records reflections on coding interview problems (LeetCode, HackerRank, NeetCode, etc.) and views an AI-structured learning summary for each one.
+- Sprint 1 covers the UI layer only. Everything runs client-side on localhost.
+- Initial state MUST load from ./mock_data.json. Adds, edits, and deletes live in memory only and reset on page refresh. This is expected behavior, not a bug.
+- "Send to AI" MUST use a canned response after a short fake delay. No real LLM call is made in Sprint 1.
+- Non-Goals: no backend or database; no login or multiple users; no real API calls; no hosting, running, or judging code; no study plans, leaderboards, or social features.
+## 2. Invariants & Negative Constraints
+- The app MUST consist of ./index.html, ./style.css, ./app.js, and ./mock_data.json.
+- All styling MUST reside in ./style.css (no inline style="..." attributes). Inline event handlers (onclick= etc.) MUST NOT be used; all listeners are attached in app.js.
+- The page MUST NOT load external CSS frameworks, fonts, scripts, or CDNs. JavaScript MUST be vanilla.
+- style.css MUST begin with the universal reset: *, *::before, *::after { box-sizing: border-box; }.
+- Colors MUST be defined once as custom properties on :root. The palette MUST use one accent color.
+- Spacing and font sizes MUST use rem. px MAY be used only for borders.
+- Styling MUST use class selectors. ID selectors MUST NOT be used for styling. IDs MAY be used for label/for pairing.
+- The layout MUST show the form and the entry list side by side (CSS Grid) at 768px and wider, and collapse into a single vertical column below 768px, with the form first.
+- App state MUST be a single entries array in app.js. renderEntries() MUST rebuild the list from that array. No other code may create or remove cards directly.
+- Edit, delete, and Send to AI MUST be handled by event delegation on the list container, using data-action attributes on the buttons.
+- User-entered text MUST be inserted with textContent (or equivalent), never innerHTML.
+- Loading MUST live in one function, loadEntries(), and the fake AI MUST live in one function, requestAiReview(entry), which returns a Promise. This isolates the two lines Sprints 2 and 3 will replace.
+- localStorage, sessionStorage, and cookies MUST NOT be used.
+- mock_data.json MUST contain at least 5 entries using exactly these fields: id, problem_name, source, topic, difficulty, result, time_minutes, approach, struggles, ai_review, created_at.
+- In mock_data.json, at least 2 entries MUST have an ai_review object, at least 2 MUST have ai_review: null, at least 1 MUST have an empty approach, and the entries MUST include all three results (Solved, Partial, Failed).
+- An ai_review object MUST have exactly four string fields: key_concept, knowledge_gap, takeaway, area_for_review.
+- New entry ids MUST be max(existing ids) + 1 (or 1 if the list is empty). Ids MUST NOT be reused within a session.
+## 3. UI Content & Interface Contract
+- The page MUST use semantic landmarks: one `<header>`, one `<main>`, one `<footer>`, and each content group inside its own `<section>` with a heading.
+- There MUST be exactly one `<h1>`, and heading levels MUST NOT skip (h1 then h2 then h3).
+- Header: `<h1>` "Interview Reflections", a one-line subtitle, and a stats row with three values: Total entries, Solve rate, Average time (minutes).
+- Solve rate = Solved entries / total entries, rounded to a whole percent. Partial does not count as solved.
+- Stats MUST update on every add, edit, and delete.
+- With zero entries, Solve rate and Average time MUST display "—", never NaN or 0%.
+- Form section (`<h2>` "New reflection"), with a visible `<label>` on every field:
+- Required: problem name (text, max 100 characters), source (select: LeetCode, HackerRank, NeetCode, Other), difficulty (select: Easy, Medium, Hard), result (select: Solved, Partial, Failed), time in minutes (number).
+- Optional: topic (text), approach (textarea), struggles (textarea).
+- Time MUST be a whole number from 1 to 600.
+- The form MUST NOT submit if a required field is empty or time is outside 1 to 600. Each error MUST appear as visible text next to its field, and MUST clear as soon as the user edits that field. alert() MUST NOT be used for validation.
+- The form root MUST carry data-mode="add" or data-mode="edit". In edit mode the submit button reads "Save changes" and a "Cancel" button appears; in add mode the submit button reads "Add entry".
+- A successful add or save MUST reset the form to add mode and clear all fields.
+- Entry list section (`<h2>` "Your entries"), with a count such as "5 entries".
+- Each entry MUST be an `<article class="card">` inside a container that uses display: grid or display: flex with gap.
+- Each card MUST carry data-id, data-result, data-difficulty, and data-ai-state (none, loading, or done) attributes, and CSS MUST style from them.
+- Each card MUST show: problem name (<h3>), source, topic (if any), time, created date, a result badge, a difficulty badge, approach text, and struggles text (each only if non-empty).
+- Badges MUST contain text (Solved, Medium, etc.), not color alone, and MUST differ visually per value.
+- Each card MUST have Edit, Delete, and Send to AI buttons.
+- An empty list MUST show: "No entries yet. Add your first reflection using the form."
+- Edit: clicking Edit MUST fill the form with that entry's values and switch the form to edit mode. Saving MUST update the card in place without changing its position or id. Cancel MUST return the form to add mode with no changes.
+- Delete: MUST ask for confirmation first (window.confirm() is acceptable). Cancelling MUST keep the entry. Confirming MUST remove the card and update the stats. If the entry being edited is deleted, the form MUST return to add mode.
+- Send to AI:
+- The button MUST have the HTML disabled attribute when the entry's approach is empty or only whitespace, with a visible hint: "Add approach text to enable AI review."
+- On click, the button MUST become disabled and read "Analyzing…", and the card's data-ai-state MUST be loading for about 1.5 seconds. A second click during loading MUST NOT start a second request.
+- When the Promise resolves, the entry's ai_review MUST be set, the card MUST show the summary, and the button MUST read "Re-run review".
+- AI summary panel on a card MUST show four labeled fields: Key concept, Knowledge gap, Takeaway, Area for review.
+- A card with no summary MUST show: "No AI review yet. Send this entry to get a structured summary."
+- Every button MUST have four visually distinct states in style.css: :hover, :focus-visible, :active, and :disabled.Disabled buttons MUST NOT look clickable and MUST NOT react to hover.
+- If a request fails to load mock_data.json, the list MUST show: "Couldn't load entries. Check that the page is served from a local server." Nothing may throw an uncaught error.
+## 4. Acceptance Checklist
+ - [] Exactly one `<h1>`, one `<header>`, one `<main>`, one `<footer>`, and no skipped heading levels.
+ - [] No inline style="..." or on...= attributes anywhere in index.html.
+ - [] style.css begins with the box-sizing reset, uses no ID selectors, and uses rem for spacing and font sizes.
+ - [] Page loads at least 5 entries from mock_data.json and renders one card each.
+ - [] Both card states appear on load: some with an AI summary, some with the empty state.
+ - [] Every card is an `<article class="card">` inside a grid or flex container with gap.
+ - [] A valid form submission adds a card without a page reload and updates all three stats.
+ - [] Submission is blocked, with visible messages and no alert(), for: empty problem name, no time, time of 0, negative time, decimal time, and time above 600.
+ - [] Error messages disappear as soon as the user edits the field.
+ - [] Edit fills the form, switches to edit mode, and saves in place. Cancel restores add mode with no changes.
+ - [] Delete asks for confirmation. Cancelling keeps the card. Confirming removes it and updates the stats.
+ - [] Deleting every entry shows the empty-list message and "—" in the stats, with no NaN.
+ - [] Send to AI is disabled for the entry with an empty approach.
+ - [] Send to AI shows a loading state for about 1.5 seconds, then displays all four summary fields. Double-clicking does not fire two requests.
+ - [] Entering `<b>test</b>` or `<script>` in any text field displays it as plain text.
+ - [] No horizontal scrollbar at 375px width. Two columns at 768px and wider, one column below.
+ - [] Hover, focus ring, active, and disabled states are all visibly different on buttons.
+ - [] Page works when served with python3 -m http.server and shows the load-error message when mock_data.json is unreachable.
+ - [] Browser console is empty in Chrome, Firefox, and Edge.
+5. Audit Protocol
+- Inspect the generated code line by line with git diff --staged before committing.
+- Commit in this order: SPEC.md, mock_data.json, index.html, style.css, then app.js in pieces (load and render, form validation, edit and delete, fake AI), one commit each.
+- Check an item off only after verifying it in the browser.
+- Record each place the AI broke a MUST line (and how it was fixed) for the AI usage log in SPRINT1.md.
