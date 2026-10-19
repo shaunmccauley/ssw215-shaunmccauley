@@ -1,0 +1,77 @@
+[
+  {
+    "id": 1,
+    "problem_name": "Two Sum",
+    "source": "LeetCode",
+    "topic": "Arrays and hash maps",
+    "difficulty": "Easy",
+    "result": "Solved",
+    "time_minutes": 18,
+    "approach": "Store each number's complement in a hash map while scanning the array once.",
+    "struggles": "I initially considered a nested-loop solution before recognizing the lookup pattern.",
+    "ai_review": {
+      "key_concept": "Use a hash map to trade space for constant-time complement lookups.",
+      "knowledge_gap": "Recognizing when a one-pass lookup can replace a pairwise search.",
+      "takeaway": "Track previously seen values so each new value can be checked immediately.",
+      "area_for_review": "Hash map lookup patterns and time-space tradeoffs."
+    },
+    "created_at": "2026-10-12T09:15:00Z"
+  },
+  {
+    "id": 2,
+    "problem_name": "Valid Parentheses",
+    "source": "NeetCode",
+    "topic": "Stacks",
+    "difficulty": "Easy",
+    "result": "Solved",
+    "time_minutes": 14,
+    "approach": "Push opening brackets onto a stack and match each closing bracket against the latest opening bracket.",
+    "struggles": "The empty-stack case was easy to overlook when processing a closing bracket.",
+    "ai_review": {
+      "key_concept": "A stack models last-in, first-out matching for nested delimiters.",
+      "knowledge_gap": "Handling invalid closing brackets before attempting a stack pop.",
+      "takeaway": "Validate both the matching type and the stack state at every closing bracket.",
+      "area_for_review": "Stack invariants and edge cases for empty input and unmatched symbols."
+    },
+    "created_at": "2026-10-13T14:30:00Z"
+  },
+  {
+    "id": 3,
+    "problem_name": "Binary Search",
+    "source": "HackerRank",
+    "topic": "Searching",
+    "difficulty": "Medium",
+    "result": "Partial",
+    "time_minutes": 32,
+    "approach": "Compare the target with the middle element and repeatedly narrow the sorted search interval.",
+    "struggles": "I need more practice choosing inclusive versus exclusive upper bounds.",
+    "ai_review": null,
+    "created_at": "2026-10-15T11:05:00Z"
+  },
+  {
+    "id": 4,
+    "problem_name": "Longest Increasing Subsequence",
+    "source": "LeetCode",
+    "topic": "Dynamic programming",
+    "difficulty": "Hard",
+    "result": "Failed",
+    "time_minutes": 55,
+    "approach": "",
+    "struggles": "I could not determine how to build the recurrence without checking every subsequence.",
+    "ai_review": null,
+    "created_at": "2026-10-16T16:45:00Z"
+  },
+  {
+    "id": 5,
+    "problem_name": "Merge Intervals",
+    "source": "Other",
+    "topic": "Sorting and intervals",
+    "difficulty": "Medium",
+    "result": "Solved",
+    "time_minutes": 27,
+    "approach": "Sort intervals by start time, then merge each interval that overlaps the end of the current result.",
+    "struggles": "I had to clarify whether touching endpoints count as overlap.",
+    "ai_review": null,
+    "created_at": "2026-10-18T10:20:00Z"
+  }
+]
