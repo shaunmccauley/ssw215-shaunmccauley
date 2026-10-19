@@ -30,7 +30,7 @@
 - Solve rate = Solved entries / total entries, rounded to a whole percent. Partial does not count as solved.
 - Stats MUST update on every add, edit, and delete.
 - With zero entries, Solve rate and Average time MUST display "—", never NaN or 0%.
-- Form section (`<h2>` "New reflection"), with a visible `<label>` on every field:
+- Form section (`<h2>` "New reflection"), with a visible `<label>` on every field:  
 - Required: problem name (text, max 100 characters), source (select: LeetCode, HackerRank, NeetCode, Other), difficulty (select: Easy, Medium, Hard), result (select: Solved, Partial, Failed), time in minutes (number).
 - Optional: topic (text), approach (textarea), struggles (textarea).
 - Time MUST be a whole number from 1 to 600.
@@ -46,6 +46,7 @@
 - An empty list MUST show: "No entries yet. Add your first reflection using the form."
 - Edit: clicking Edit MUST fill the form with that entry's values and switch the form to edit mode. Saving MUST update the card in place without changing its position or id. Cancel MUST return the form to add mode with no changes.
 - Delete: MUST ask for confirmation first (window.confirm() is acceptable). Cancelling MUST keep the entry. Confirming MUST remove the card and update the stats. If the entry being edited is deleted, the form MUST return to add mode.
+- Two separate scroll bars for form section and list of submitted problems 
 - Send to AI:
 - The button MUST have the HTML disabled attribute when the entry's approach is empty or only whitespace, with a visible hint: "Add approach text to enable AI review."
 - On click, the button MUST become disabled and read "Analyzing…", and the card's data-ai-state MUST be loading for about 1.5 seconds. A second click during loading MUST NOT start a second request.
