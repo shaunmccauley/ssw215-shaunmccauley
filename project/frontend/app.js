@@ -1,4 +1,5 @@
 let entries = [];
+const pendingReviewIds = new Set();
 
 async function loadEntries() {
   try {
@@ -23,8 +24,7 @@ async function loadEntries() {
   }
 }
 
-function renderEntries() {
-  const entriesList = document.getElementById('entries-list');
+function renderStats() {
   const totalEntries = document.getElementById('total-entries');
   const solveRate = document.getElementById('solve-rate');
   const averageTime = document.getElementById('average-time');
@@ -36,10 +36,6 @@ function renderEntries() {
   if (entries.length === 0) {
     solveRate.textContent = '—';
     averageTime.textContent = '—';
-    const emptyState = document.createElement('p');
-    emptyState.className = 'empty-state';
-    emptyState.textContent = 'No entries yet. Add your first reflection using the form.';
-    entriesList.replaceChildren(emptyState);
     return;
   }
 
@@ -47,162 +43,170 @@ function renderEntries() {
   const totalTime = entries.reduce((sum, entry) => sum + Number(entry.time_minutes), 0);
   solveRate.textContent = `${Math.round((solvedEntries / entries.length) * 100)}%`;
   averageTime.textContent = String(Math.round(totalTime / entries.length));
-  entriesList.replaceChildren();
+}
 
-  entries.forEach((entry) => {
-    const card = document.createElement('article');
-    card.className = 'card';
-    card.dataset.id = String(entry.id);
-    card.dataset.result = entry.result;
-    card.dataset.difficulty = entry.difficulty;
-    card.dataset.aiState = entry.ai_review ? 'done' : 'none';
+function createAiSummary(review) {
+  const aiSummary = document.createElement('section');
+  aiSummary.className = 'ai-summary';
 
-    const cardHeader = document.createElement('div');
-    cardHeader.className = 'card-header';
+  const aiHeading = document.createElement('h4');
+  aiHeading.textContent = 'AI review';
+  aiSummary.append(aiHeading);
 
-    const headingGroup = document.createElement('div');
-    const title = document.createElement('h3');
-    title.textContent = entry.problem_name;
-    headingGroup.append(title);
-
-    const source = document.createElement('p');
-    source.className = 'card-source';
-    source.textContent = entry.source;
-    headingGroup.append(source);
-
-    if (entry.topic) {
-      const topic = document.createElement('p');
-      topic.className = 'card-topic';
-      topic.textContent = entry.topic;
-      headingGroup.append(topic);
-    }
-
-    const badges = document.createElement('div');
-    badges.className = 'badges';
-
-    const resultBadge = document.createElement('span');
-    resultBadge.className = 'badge badge-result';
-    resultBadge.textContent = entry.result;
-    badges.append(resultBadge);
-
-    const difficultyBadge = document.createElement('span');
-    difficultyBadge.className = 'badge badge-difficulty';
-    difficultyBadge.textContent = entry.difficulty;
-    badges.append(difficultyBadge);
-
-    cardHeader.append(headingGroup, badges);
-    card.append(cardHeader);
-
-    const cardMeta = document.createElement('div');
-    cardMeta.className = 'card-meta';
-
-    const time = document.createElement('span');
-    time.textContent = `${entry.time_minutes} minutes`;
-    cardMeta.append(time);
-
-    const date = document.createElement('time');
-    date.className = 'card-date';
-    date.dateTime = entry.created_at;
-    date.textContent = new Date(entry.created_at).toLocaleDateString();
-    cardMeta.append(date);
-    card.append(cardMeta);
-
-    if (entry.approach) {
-      const approachBlock = document.createElement('div');
-      approachBlock.className = 'card-copy-block';
-      const approachLabel = document.createElement('span');
-      approachLabel.className = 'card-copy-label';
-      approachLabel.textContent = 'Approach';
-      const approach = document.createElement('p');
-      approach.className = 'card-copy';
-      approach.textContent = entry.approach;
-      approachBlock.append(approachLabel, approach);
-      card.append(approachBlock);
-    }
-
-    if (entry.struggles) {
-      const strugglesBlock = document.createElement('div');
-      strugglesBlock.className = 'card-copy-block';
-      const strugglesLabel = document.createElement('span');
-      strugglesLabel.className = 'card-copy-label';
-      strugglesLabel.textContent = 'Struggles';
-      const struggles = document.createElement('p');
-      struggles.className = 'card-copy';
-      struggles.textContent = entry.struggles;
-      strugglesBlock.append(strugglesLabel, struggles);
-      card.append(strugglesBlock);
-    }
-
-    if (entry.ai_review) {
-      const aiSummary = document.createElement('section');
-      aiSummary.className = 'ai-summary';
-      const aiHeading = document.createElement('h4');
-      aiHeading.textContent = 'AI review';
-      aiSummary.append(aiHeading);
-
-      const aiFields = document.createElement('dl');
-      aiFields.className = 'ai-fields';
-      [
-        ['Key concept', entry.ai_review.key_concept],
-        ['Knowledge gap', entry.ai_review.knowledge_gap],
-        ['Takeaway', entry.ai_review.takeaway],
-        ['Area for review', entry.ai_review.area_for_review]
-      ].forEach(([label, value]) => {
-        const aiField = document.createElement('div');
-        aiField.className = 'ai-field';
-        const fieldLabel = document.createElement('dt');
-        fieldLabel.textContent = label;
-        const fieldValue = document.createElement('dd');
-        fieldValue.textContent = value;
-        aiField.append(fieldLabel, fieldValue);
-        aiFields.append(aiField);
-      });
-
-      aiSummary.append(aiFields);
-      card.append(aiSummary);
-    } else {
-      const aiEmpty = document.createElement('p');
-      aiEmpty.className = 'ai-empty';
-      aiEmpty.textContent = 'No AI review yet. Send this entry to get a structured summary.';
-      card.append(aiEmpty);
-    }
-
-    const cardFooter = document.createElement('div');
-    cardFooter.className = 'card-footer';
-    const cardActions = document.createElement('div');
-    cardActions.className = 'card-actions';
-
-    const editButton = document.createElement('button');
-    editButton.className = 'button button-secondary';
-    editButton.type = 'button';
-    editButton.dataset.action = 'edit';
-    editButton.textContent = 'Edit';
-
-    const deleteButton = document.createElement('button');
-    deleteButton.className = 'button button-secondary';
-    deleteButton.type = 'button';
-    deleteButton.dataset.action = 'delete';
-    deleteButton.textContent = 'Delete';
-
-    const aiButton = document.createElement('button');
-    aiButton.className = 'button button-primary';
-    aiButton.type = 'button';
-    aiButton.dataset.action = 'ai';
-    aiButton.textContent = entry.ai_review ? 'Re-run review' : 'Send to AI';
-    aiButton.disabled = !entry.approach || entry.approach.trim() === '';
-    cardActions.append(editButton, deleteButton, aiButton);
-    cardFooter.append(cardActions);
-
-    if (aiButton.disabled) {
-      const aiHint = document.createElement('p');
-      aiHint.className = 'ai-hint';
-      aiHint.textContent = 'Add approach text to enable AI review.';
-      cardFooter.append(aiHint);
-    }
-
-    card.append(cardFooter);
-    entriesList.append(card);
+  const aiFields = document.createElement('dl');
+  aiFields.className = 'ai-fields';
+  [
+    ['Key concept', review.key_concept],
+    ['Knowledge gap', review.knowledge_gap],
+    ['Takeaway', review.takeaway],
+    ['Area for review', review.area_for_review]
+  ].forEach(([label, value]) => {
+    const aiField = document.createElement('div');
+    aiField.className = 'ai-field';
+    const fieldLabel = document.createElement('dt');
+    fieldLabel.textContent = label;
+    const fieldValue = document.createElement('dd');
+    fieldValue.textContent = value;
+    aiField.append(fieldLabel, fieldValue);
+    aiFields.append(aiField);
   });
+
+  aiSummary.append(aiFields);
+  return aiSummary;
+}
+
+function createCard(entry) {
+  const card = document.createElement('article');
+  const reviewPending = pendingReviewIds.has(entry.id);
+  const hasApproach = Boolean(entry.approach && entry.approach.trim());
+  card.className = 'card';
+  card.dataset.id = String(entry.id);
+  card.dataset.result = entry.result;
+  card.dataset.difficulty = entry.difficulty;
+  card.dataset.aiState = reviewPending ? 'loading' : entry.ai_review ? 'done' : 'none';
+
+  const cardHeader = document.createElement('div');
+  cardHeader.className = 'card-header';
+  const headingGroup = document.createElement('div');
+  const title = document.createElement('h3');
+  title.textContent = entry.problem_name;
+  headingGroup.append(title);
+
+  const source = document.createElement('p');
+  source.className = 'card-source';
+  source.textContent = entry.source;
+  headingGroup.append(source);
+
+  if (entry.topic) {
+    const topic = document.createElement('p');
+    topic.className = 'card-topic';
+    topic.textContent = entry.topic;
+    headingGroup.append(topic);
+  }
+
+  const badges = document.createElement('div');
+  badges.className = 'badges';
+  const resultBadge = document.createElement('span');
+  resultBadge.className = 'badge badge-result';
+  resultBadge.textContent = entry.result;
+  const difficultyBadge = document.createElement('span');
+  difficultyBadge.className = 'badge badge-difficulty';
+  difficultyBadge.textContent = entry.difficulty;
+  badges.append(resultBadge, difficultyBadge);
+  cardHeader.append(headingGroup, badges);
+  card.append(cardHeader);
+
+  const cardMeta = document.createElement('div');
+  cardMeta.className = 'card-meta';
+  const time = document.createElement('span');
+  time.textContent = `${entry.time_minutes} minutes`;
+  const date = document.createElement('time');
+  date.className = 'card-date';
+  date.dateTime = entry.created_at;
+  date.textContent = new Date(entry.created_at).toLocaleDateString();
+  cardMeta.append(time, date);
+  card.append(cardMeta);
+
+  [
+    ['Approach', entry.approach],
+    ['Struggles', entry.struggles]
+  ].forEach(([label, value]) => {
+    if (!value) {
+      return;
+    }
+
+    const copyBlock = document.createElement('div');
+    copyBlock.className = 'card-copy-block';
+    const copyLabel = document.createElement('span');
+    copyLabel.className = 'card-copy-label';
+    copyLabel.textContent = label;
+    const copy = document.createElement('p');
+    copy.className = 'card-copy';
+    copy.textContent = value;
+    copyBlock.append(copyLabel, copy);
+    card.append(copyBlock);
+  });
+
+  if (entry.ai_review) {
+    card.append(createAiSummary(entry.ai_review));
+  } else {
+    const aiEmpty = document.createElement('p');
+    aiEmpty.className = 'ai-empty';
+    aiEmpty.textContent = 'No AI review yet. Send this entry to get a structured summary.';
+    card.append(aiEmpty);
+  }
+
+  const cardFooter = document.createElement('div');
+  cardFooter.className = 'card-footer';
+  const cardActions = document.createElement('div');
+  cardActions.className = 'card-actions';
+
+  const editButton = document.createElement('button');
+  editButton.className = 'button button-secondary';
+  editButton.type = 'button';
+  editButton.dataset.action = 'edit';
+  editButton.textContent = 'Edit';
+
+  const deleteButton = document.createElement('button');
+  deleteButton.className = 'button button-secondary';
+  deleteButton.type = 'button';
+  deleteButton.dataset.action = 'delete';
+  deleteButton.textContent = 'Delete';
+
+  const aiButton = document.createElement('button');
+  aiButton.className = 'button button-primary';
+  aiButton.type = 'button';
+  aiButton.dataset.action = 'ai';
+  aiButton.textContent = reviewPending ? 'Analyzing…' : entry.ai_review ? 'Re-run review' : 'Send to AI';
+  aiButton.disabled = reviewPending || !hasApproach;
+  cardActions.append(editButton, deleteButton, aiButton);
+  cardFooter.append(cardActions);
+
+  if (!hasApproach) {
+    const aiHint = document.createElement('p');
+    aiHint.className = 'ai-hint';
+    aiHint.textContent = 'Add approach text to enable AI review.';
+    cardFooter.append(aiHint);
+  }
+
+  card.append(cardFooter);
+  return card;
+}
+
+function renderEntries() {
+  const entriesList = document.getElementById('entries-list');
+  renderStats();
+
+  if (entries.length === 0) {
+    const emptyState = document.createElement('p');
+    emptyState.className = 'empty-state';
+    emptyState.textContent = 'No entries yet. Add your first reflection using the form.';
+    entriesList.replaceChildren(emptyState);
+    return;
+  }
+
+  entriesList.replaceChildren();
+  entries.forEach((entry) => entriesList.append(createCard(entry)));
 }
 
 const reflectionForm = document.getElementById('reflection-form');
@@ -241,7 +245,12 @@ reflectionForm.addEventListener('submit', (event) => {
   event.preventDefault();
 
   const fields = requiredFieldIds.map((fieldId) => document.getElementById(fieldId));
-  const isValid = fields.every((field) => validateField(field));
+  let isValid = true;
+  fields.forEach((field) => {
+    if (!validateField(field)) {
+      isValid = false;
+    }
+  });
   if (!isValid) {
     return;
   }
@@ -306,6 +315,7 @@ function fillFormForEdit(entry) {
   requiredFieldIds.forEach((fieldId) => {
     clearFieldError(document.getElementById(fieldId));
   });
+  document.getElementById('problem-name').focus();
 }
 
 document.getElementById('cancel-edit').addEventListener('click', resetFormToAddMode);
@@ -345,15 +355,17 @@ document.getElementById('entries-list').addEventListener('click', (event) => {
   }
 
   if (actionButton.dataset.action === 'ai') {
-    if (card.dataset.aiState === 'loading' || !entry.approach || entry.approach.trim() === '') {
+    if (pendingReviewIds.has(entry.id) || !entry.approach || entry.approach.trim() === '') {
       return;
     }
 
+    pendingReviewIds.add(entry.id);
     card.dataset.aiState = 'loading';
     actionButton.disabled = true;
     actionButton.textContent = 'Analyzing…';
 
     requestAiReview(entry).then((review) => {
+      pendingReviewIds.delete(entry.id);
       if (!entries.includes(entry)) {
         return;
       }

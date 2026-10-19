@@ -17,6 +17,9 @@
   --color-warning-soft: #f6ead2;
   --color-danger: #a33e45;
   --color-danger-soft: #f7dfe1;
+  --color-header-copy: #c8d4d1;
+  --color-header-muted: #afc0bd;
+  --color-ai-panel: #f1faf8;
   --color-white: #ffffff;
 }
 
@@ -96,7 +99,7 @@ h1 {
 .subtitle {
   max-width: 38rem;
   margin-bottom: 2.5rem;
-  color: #c8d4d1;
+  color: var(--color-header-copy);
   font-size: 1.1rem;
 }
 
@@ -115,7 +118,7 @@ h1 {
 .stat-label {
   display: block;
   margin-bottom: 0.25rem;
-  color: #afc0bd;
+  color: var(--color-header-muted);
   font-family: 'Trebuchet MS', sans-serif;
   font-size: 0.74rem;
   letter-spacing: 0.04rem;
@@ -285,12 +288,23 @@ main.page-shell {
 }
 
 .button:focus-visible {
-  outline: 0.2rem solid var(--color-accent-soft);
-  outline-offset: 0.15rem;
+  outline: 0.2rem solid var(--color-danger);
+  outline-offset: 0.2rem;
 }
 
 .button:active:not(:disabled) {
   transform: translateY(0.1rem);
+}
+
+.button-primary:active:not(:disabled) {
+  border-color: var(--color-accent-dark);
+  color: var(--color-accent-dark);
+  background: var(--color-paper);
+}
+
+.button-secondary:active:not(:disabled) {
+  border-color: var(--color-accent-dark);
+  color: var(--color-white);
   background: var(--color-accent-dark);
 }
 
@@ -457,7 +471,7 @@ main.page-shell {
   padding: 1.1rem;
   border: 1px solid var(--color-accent-soft);
   border-radius: 0.35rem;
-  background: #f1faf8;
+  background: var(--color-ai-panel);
 }
 
 .ai-summary h4 {
