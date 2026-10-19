@@ -40,7 +40,7 @@
 - Entry list section (`<h2>` "Your entries"), with a count such as "5 entries".
 - Each entry MUST be an `<article class="card">` inside a container that uses display: grid or display: flex with gap.
 - Each card MUST carry data-id, data-result, data-difficulty, and data-ai-state (none, loading, or done) attributes, and CSS MUST style from them.
-- Each card MUST show: problem name (<h3>), source, topic (if any), time, created date, a result badge, a difficulty badge, approach text, and struggles text (each only if non-empty).
+- Each card MUST show: problem name (`<h3>`), source, topic (if any), time, created date, a result badge, a difficulty badge, approach text, and struggles text (each only if non-empty).
 - Badges MUST contain text (Solved, Medium, etc.), not color alone, and MUST differ visually per value.
 - Each card MUST have Edit, Delete, and Send to AI buttons.
 - An empty list MUST show: "No entries yet. Add your first reflection using the form."
@@ -55,26 +55,26 @@
 - Every button MUST have four visually distinct states in style.css: :hover, :focus-visible, :active, and :disabled.Disabled buttons MUST NOT look clickable and MUST NOT react to hover.
 - If a request fails to load mock_data.json, the list MUST show: "Couldn't load entries. Check that the page is served from a local server." Nothing may throw an uncaught error.
 ## 4. Acceptance Checklist
- - [] Exactly one `<h1>`, one `<header>`, one `<main>`, one `<footer>`, and no skipped heading levels.
- - [] No inline style="..." or on...= attributes anywhere in index.html.
- - [] style.css begins with the box-sizing reset, uses no ID selectors, and uses rem for spacing and font sizes.
- - [] Page loads at least 5 entries from mock_data.json and renders one card each.
- - [] Both card states appear on load: some with an AI summary, some with the empty state.
- - [] Every card is an `<article class="card">` inside a grid or flex container with gap.
- - [] A valid form submission adds a card without a page reload and updates all three stats.
- - [] Submission is blocked, with visible messages and no alert(), for: empty problem name, no time, time of 0, negative time, decimal time, and time above 600.
- - [] Error messages disappear as soon as the user edits the field.
- - [] Edit fills the form, switches to edit mode, and saves in place. Cancel restores add mode with no changes.
- - [] Delete asks for confirmation. Cancelling keeps the card. Confirming removes it and updates the stats.
- - [] Deleting every entry shows the empty-list message and "—" in the stats, with no NaN.
- - [] Send to AI is disabled for the entry with an empty approach.
- - [] Send to AI shows a loading state for about 1.5 seconds, then displays all four summary fields. Double-clicking does not fire two requests.
- - [] Entering `<b>test</b>` or `<script>` in any text field displays it as plain text.
- - [] No horizontal scrollbar at 375px width. Two columns at 768px and wider, one column below.
- - [] Hover, focus ring, active, and disabled states are all visibly different on buttons.
- - [] Page works when served with python3 -m http.server and shows the load-error message when mock_data.json is unreachable.
- - [] Browser console is empty in Chrome, Firefox, and Edge.
-5. Audit Protocol
+ - [x] Exactly one `<h1>`, one `<header>`, one `<main>`, one `<footer>`, and no skipped heading levels.
+ - [x] No inline style="..." or on...= attributes anywhere in index.html.
+ - [x] style.css begins with the box-sizing reset, uses no ID selectors, and uses rem for spacing and font sizes.
+ - [x] Page loads at least 5 entries from mock_data.json and renders one card each.
+ - [x] Both card states appear on load: some with an AI summary, some with the empty state.
+ - [x] Every card is an `<article class="card">` inside a grid or flex container with gap.
+ - [x] A valid form submission adds a card without a page reload and updates all three stats.
+ - [x] Submission is blocked, with visible messages and no alert(), for: empty problem name, no time, time of 0, negative time, decimal time, and time above 600.
+ - [x] Error messages disappear as soon as the user edits the field.
+ - [x] Edit fills the form, switches to edit mode, and saves in place. Cancel restores add mode with no changes.
+ - [x] Delete asks for confirmation. Cancelling keeps the card. Confirming removes it and updates the stats.
+ - [x] Deleting every entry shows the empty-list message and "—" in the stats, with no NaN.
+ - [x] Send to AI is disabled for the entry with an empty approach.
+ - [x] Send to AI shows a loading state for about 1.5 seconds, then displays all four summary fields. Double-clicking does not fire two requests.
+ - [x] Entering `<b>test</b>` or `<script>` in any text field displays it as plain text.
+ - [x] No horizontal scrollbar at 375px width. Two columns at 768px and wider, one column below.
+ - [x] Hover, focus ring, active, and disabled states are all visibly different on buttons.
+ - [x] Page works when served with python3 -m http.server and shows the load-error message when mock_data.json is unreachable.
+ - [x] Browser console is empty in Chrome, Firefox, and Edge.
+## 5. Audit Protocol
 - Inspect the generated code line by line with git diff --staged before committing.
 - Commit in this order: SPEC.md, mock_data.json, index.html, style.css, then app.js in pieces (load and render, form validation, edit and delete, fake AI), one commit each.
 - Check an item off only after verifying it in the browser.
