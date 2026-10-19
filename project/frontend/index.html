@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Reflections</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="page-shell">
+      <p class="eyebrow">Coding interview practice</p>
+      <h1>Interview Reflections</h1>
+      <p class="subtitle">Capture what you learned from every problem and make your next attempt sharper.</p>
+      <section class="stats" aria-label="Reflection statistics">
+        <div class="stat">
+          <span class="stat-label">Total entries</span>
+          <strong class="stat-value" id="total-entries">—</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Solve rate</span>
+          <strong class="stat-value" id="solve-rate">—</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Average time (minutes)</span>
+          <strong class="stat-value" id="average-time">—</strong>
+        </div>
+      </section>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="workspace" aria-label="Reflection workspace">
+      <section class="form-panel" aria-labelledby="new-reflection-heading">
+        <div class="section-heading">
+          <p class="eyebrow">Keep the reasoning</p>
+          <h2 id="new-reflection-heading">New reflection</h2>
+        </div>
+        <form class="reflection-form" id="reflection-form" data-mode="add" novalidate>
+          <div class="field-group">
+            <label for="problem-name">Problem name <span aria-hidden="true">*</span></label>
+            <input id="problem-name" name="problem_name" type="text" maxlength="100" required>
+            <span class="field-error" id="problem-name-error" aria-live="polite"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="source">Source <span aria-hidden="true">*</span></label>
+            <select id="source" name="source" required>
+              <option value="">Choose a source</option>
+              <option value="LeetCode">LeetCode</option>
+              <option value="HackerRank">HackerRank</option>
+              <option value="NeetCode">NeetCode</option>
+              <option value="Other">Other</option>
+            </select>
+            <span class="field-error" id="source-error" aria-live="polite"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="topic">Topic</label>
+            <input id="topic" name="topic" type="text">
+            <span class="field-error" id="topic-error" aria-live="polite"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="difficulty">Difficulty <span aria-hidden="true">*</span></label>
+            <select id="difficulty" name="difficulty" required>
+              <option value="">Choose a difficulty</option>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+            <span class="field-error" id="difficulty-error" aria-live="polite"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="result">Result <span aria-hidden="true">*</span></label>
+            <select id="result" name="result" required>
+              <option value="">Choose a result</option>
+              <option value="Solved">Solved</option>
+              <option value="Partial">Partial</option>
+              <option value="Failed">Failed</option>
+            </select>
+            <span class="field-error" id="result-error" aria-live="polite"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="time-minutes">Time in minutes <span aria-hidden="true">*</span></label>
+            <input id="time-minutes" name="time_minutes" type="number" min="1" max="600" step="1" required>
+            <span class="field-error" id="time-minutes-error" aria-live="polite"></span>
+          </div>
+
+          <div class="field-group field-group-wide">
+            <label for="approach">Approach</label>
+            <textarea id="approach" name="approach" rows="5"></textarea>
+            <span class="field-error" id="approach-error" aria-live="polite"></span>
+          </div>
+
+          <div class="field-group field-group-wide">
+            <label for="struggles">Struggles</label>
+            <textarea id="struggles" name="struggles" rows="4"></textarea>
+            <span class="field-error" id="struggles-error" aria-live="polite"></span>
+          </div>
+
+          <div class="form-actions">
+            <button class="button button-primary" id="submit-entry" type="submit">Add entry</button>
+            <button class="button button-secondary" id="cancel-edit" type="button" hidden>Cancel</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="entries-panel" aria-labelledby="entries-heading">
+        <div class="section-heading section-heading-inline">
+          <div>
+            <p class="eyebrow">Your practice log</p>
+            <h2 id="entries-heading">Your entries</h2>
+          </div>
+          <p class="entry-count" id="entry-count">0 entries</p>
+        </div>
+        <div class="entries-list" id="entries-list" aria-live="polite">
+          <p class="empty-state" id="empty-state">No entries yet. Add your first reflection using the form.</p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="page-shell">
+      <p>Built for deliberate practice, one problem at a time.</p>
+    </div>
+  </footer>
+</body>
+</html>
