@@ -1,43 +1,38 @@
+import json
+from pathlib import Path
+
 from flask import Flask, jsonify, render_template
 
 
 app = Flask(__name__)
 
-projects_db = [
-    {
-        "id": 1,
-        "title": "NBA Player Stats Tracker",
-        "description": "a command-line tool for looking up player stats",
-        "likes": 0,
-    },
-    {
-        "id": 2,
-        "title": "Autonomous Navigational Robot",
-        "description": "a robot that finds its own way around",
-        "likes": 0,
-    },
-    {
-        "id": 3,
-        "title": "LeetCode Assistant (planned)",
-        "description": "a tool to help with studying practice problems",
-        "likes": 0,
-    },
-     {
-        "id": 4, # hand-edited by SM
-        "title": "Smart Watering System", # hand-edited by SM
-        "description": "a robot that waters plants based on environmental factors", # hand-edited by SM
-        "likes": 0, # hand-edited by SM
-    },
-]
+PROJECTS_FILE = Path(__file__).resolve().parent / "projects.json"
+
+
+def load_projects():
+    with PROJECTS_FILE.open(encoding="utf-8") as file:
+        return json.load(file)
+
+
+def save_projects(projects):
+    with PROJECTS_FILE.open("w", encoding="utf-8") as file:
+        json.dump(projects, file, indent=2)
+
+
+projects_db = load_projects()
 
 
 @app.route("/")
 def index():
+    global projects_db
+    projects_db = load_projects()
     return render_template("index.html", projects=projects_db)
 
 
 @app.post("/api/projects/<int:project_id>/upvote")
 def upvote_project(project_id):
+    global projects_db
+    projects_db = load_projects()
     project = next(
         (project for project in projects_db if project["id"] == project_id),
         None,
@@ -46,6 +41,7 @@ def upvote_project(project_id):
         return jsonify({"error": "Project not found"}), 404
 
     project["likes"] += 1
+    save_projects(projects_db)
     return jsonify({"id": project["id"], "likes": project["likes"]})
 
 
