@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shaun McCauley | Portfolio</title>
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="site-nav" aria-label="Main navigation">
+        <a class="nav-link" href="#projects">Projects</a>
+        <a class="nav-link" href="https://github.com/shaunmccauley" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
+
+      <section class="hero" aria-labelledby="hero-heading">
+        <div class="container hero-content">
+          <div class="hero-copy">
+            <h1 id="hero-heading">Shaun McCauley</h1>
+            <p class="subtitle">Sophomore software engineering student at Stevens Institute of Technology.</p>
+            <p class="bio">
+              I enjoy working on both front-end and back-end, and I am learning React next. Away from the keyboard, I am hiking, cooking, or playing basketball and pickleball.
+            </p>
+            <a class="button" href="#projects">See my projects</a>
+            <button class="button" type="button" disabled>Contact me (coming soon)</button>
+          </div>
+          <div class="hero-visual">
+            <img src="{{ url_for('static', filename='assets/avatar.jpg') }}" alt="Shaun McCauley portrait" />
+          </div>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section id="projects" class="projects-section" aria-labelledby="projects-heading">
+        <div class="container">
+          <h2 id="projects-heading">Projects</h2>
+          <div class="project-controls">
+            <label for="filter-input">Filter projects</label>
+            <input id="filter-input" type="text" />
+            <p id="project-count" aria-live="polite">Showing {{ projects|length }} of {{ projects|length }} projects</p>
+          </div>
+          <div class="project-grid">
+            {% for project in projects %}
+            <article class="card project-card{% if project.id == 3 %} featured{% endif %}" data-project-id="{{ project.id }}">
+              <h3>{{ project.title }}</h3>
+              <p>{{ project.description }}</p>
+              <button class="upvote-btn" type="button">Upvote</button>
+              <span class="like-count">{{ project.likes }}</span>
+              <!-- hand-edited by SM -->
+              {% if project.likes > 10 %}
+              <span class="trending-badge">Trending</span>
+              {% endif %}
+            </article>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>Shaun McCauley</p>
+      </div>
+    </footer>
+  </body>
+</html>
