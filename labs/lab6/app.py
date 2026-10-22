@@ -12,7 +12,7 @@ projects_db = [
     },
     {
         "id": 2,
-        "title": "Lebron James Tracker",
+        "title": "Autonomous Robot",
         "description": "a robot that finds its own way around",
         "likes": 0,
     },
@@ -21,6 +21,12 @@ projects_db = [
         "title": "LeetCode Assistant (planned)",
         "description": "a tool to help with studying practice problems",
         "likes": 0,
+    },
+    {
+        "id": 4, # hand-edited by SM
+        "title": "Smart Watering System", # hand-edited by SM
+        "description": "a robot that waters plants based on environmental factors", # hand-edited by SM
+        "likes": 0, # hand-edited by SM
     },
 ]
 
