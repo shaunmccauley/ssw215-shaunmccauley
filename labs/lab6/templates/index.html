@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shaun McCauley | Portfolio</title>
-    <script src="./app.js" defer></script>
-    <link rel="stylesheet" href="./style.css" />
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   </head>
   <body>
     <header class="site-header">
@@ -26,7 +26,7 @@
             <button class="button" type="button" disabled>Contact me (coming soon)</button>
           </div>
           <div class="hero-visual">
-            <img src="./assets/avatar.jpg" alt="Shaun McCauley portrait" />
+            <img src="{{ url_for('static', filename='assets/avatar.jpg') }}" alt="Shaun McCauley portrait" />
           </div>
         </div>
       </section>
@@ -39,21 +39,15 @@
           <div class="project-controls">
             <label for="filter-input">Filter projects</label>
             <input id="filter-input" type="text" />
-            <p id="project-count" aria-live="polite">Showing 3 of 3 projects</p>
+            <p id="project-count" aria-live="polite">Showing {{ projects|length }} of {{ projects|length }} projects</p>
           </div>
           <div class="project-grid">
-            <article class="card project-card">
-              <h3>NBA Player Stats Tracker</h3>
-              <p>a command-line tool for looking up player stats</p>
+            {% for project in projects %}
+            <article class="card project-card{% if project.id == 3 %} featured{% endif %}" data-project-id="{{ project.id }}">
+              <h3>{{ project.title }}</h3>
+              <p>{{ project.description }}</p>
             </article>
-            <article class="card project-card">
-              <h3>Autonomous Navigational Robot</h3>
-              <p>a robot that finds its own way around</p>
-            </article>
-            <article class="card project-card featured">
-              <h3>LeetCode Assistant (planned)</h3>
-              <p>a tool to help with studying practice problems</p>
-            </article>
+            {% endfor %}
           </div>
         </div>
       </section>
