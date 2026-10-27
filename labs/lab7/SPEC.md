@@ -83,15 +83,15 @@ number on that card, with no page reload.
 shows whatever the file currently contains.
 - After a successful upvote, the new like count MUST be present in projects.json on disk.
 ## 4. Acceptance Checklist
-- [ ] The page still loads at http://127.0.0.1:5000/ and shows every project in
+- [x] The page still loads at http://127.0.0.1:5000/ and shows every project in
 projects.json.
-- [ ] app.py contains no hardcoded project list.
-- [ ] Upvoting a project changes the number inside projects.json.
-- [ ] Stopping the server with Ctrl+C, restarting it, and reloading the page keeps the
+- [x] app.py contains no hardcoded project list.
+- [x] Upvoting a project changes the number inside projects.json.
+- [x] Stopping the server with Ctrl+C, restarting it, and reloading the page keeps the
 new count.
-- [ ] Editing a title directly in projects.json and reloading the page changes what I
+- [x] Editing a title directly in projects.json and reloading the page changes what I
 see.
-- [ ] The DevTools Console shows no red errors.
+- [x] The DevTools Console shows no red errors.
 reloaded.
 ## 5. Audit Protocol
 - Inspect the generated code line by line with `git diff --staged` before committing.
