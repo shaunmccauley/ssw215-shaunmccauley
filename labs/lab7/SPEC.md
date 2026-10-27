@@ -106,11 +106,11 @@ new count.
 see.
 - [x] The DevTools Console shows no red errors.
 reloaded.
-- [ ] Typing a title and clicking Add project adds a card without reloading the page.
-- [ ] The project cards still lay out the way they did in Lab 6.
-- [ ] The new project is in projects.json, and it is still there after a restart.
-- [ ] The Network tab shows the create request returning 201.
-- [ ] Submitting an empty title leaves projects.json unchanged, and the server answers
+- [x] Typing a title and clicking Add project adds a card without reloading the page.
+- [x] The project cards still lay out the way they did in Lab 6.
+- [x] The new project is in projects.json, and it is still there after a restart.
+- [x] The Network tab shows the create request returning 201.
+- [x] Submitting an empty title leaves projects.json unchanged, and the server answers
 400.
 ## 5. Audit Protocol
 - Inspect the generated code line by line with `git diff --staged` before committing.

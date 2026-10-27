@@ -22,5 +22,17 @@
     "title": "Smart Watering System",
     "description": "a robot that waters plants based on environmental factors",
     "likes": 0
+  },
+  {
+    "id": 5,
+    "title": "Add project test",
+    "description": "",
+    "likes": 0
+  },
+  {
+    "id": 6,
+    "title": "Add project test 2",
+    "description": "",
+    "likes": 0
   }
 ]
