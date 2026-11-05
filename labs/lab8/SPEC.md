@@ -132,10 +132,10 @@ JSON.
 - [x] Adding a project whose title already exists does not create a second copy, and the
 server does not crash.
 - [x] instance/ and *.db are ignored by Git and do not appear in git status.
-- [ ] instance/portfolio.db contains two tables.
-- [ ] Deleting instance/portfolio.db and restarting rebuilds both tables with the seed
-- [ ] After reloading the page, every card including those just recently added to the form, shows the authors of the respective projects name. <!-- written by SM -->
-- [ ] Opening http://127.0.0.1:5000/api/projects in the browser shows an authors name on every project listed. <!-- written by SM -->
+- [x] instance/portfolio.db contains two tables.
+- [x] Deleting instance/portfolio.db and restarting rebuilds both tables with the seed
+- [x] After reloading the page, every card including those just recently added to the form, shows the authors of the respective projects name. <!-- written by SM -->
+- [x] Opening http://127.0.0.1:5000/api/projects in the browser shows an authors name on every project listed. <!-- written by SM -->
 data.
 ## 5. Audit Protocol
 - Inspect the generated code line by line with `git diff --staged` before committing.
