@@ -79,6 +79,8 @@ addProjectButton.addEventListener("click", async () => {
     titleElement.textContent = project.title;
     const descriptionElement = document.createElement("p");
     descriptionElement.textContent = project.description;
+    const authorElement = document.createElement("p");
+    authorElement.textContent = `By ${project.author}`;
     const upvoteButton = document.createElement("button");
     upvoteButton.className = "upvote-btn";
     upvoteButton.type = "button";
@@ -86,7 +88,13 @@ addProjectButton.addEventListener("click", async () => {
     const likesElement = document.createElement("span");
     likesElement.className = "like-count";
     likesElement.textContent = project.likes;
-    card.append(titleElement, descriptionElement, upvoteButton, likesElement);
+    card.append(
+      titleElement,
+      descriptionElement,
+      authorElement,
+      upvoteButton,
+      likesElement,
+    );
     projectGrid.append(card);
     newTitleInput.value = "";
     updateProjectList();
