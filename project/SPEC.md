@@ -1,12 +1,12 @@
 ## SPEC: Interview Reflections Dashboard
 ## 1. Purpose & Scope
 - A single-user browser dashboard where a college student records reflections on coding interview problems (LeetCode, HackerRank, NeetCode, etc.) and views an AI-structured learning summary for each one.
-- Sprint 1 covers the UI layer only. Everything runs client-side on localhost.
-- Initial state MUST load from ./mock_data.json. Adds, edits, and deletes live in memory only and reset on page refresh. This is expected behavior, not a bug.
-- "Send to AI" MUST use a canned response after a short fake delay. No real LLM call is made in Sprint 1.
-- Non-Goals: no backend or database; no login or multiple users; no real API calls; no hosting, running, or judging code; no study plans, leaderboards, or social features.
+- Sprint 1 built the UI layer. Sprint 2 adds a Flask backend (section 6) so entries persist across page refreshes and server restarts. The app runs on http://localhost:5000.
+- Entries MUST load from GET /api/entries. Adds, edits, deletes, and AI reviews MUST be saved through the API.
+- "Send to AI" MUST call POST /api/entries/`<id>`/review. Through Sprint 2 the backend returns a canned review after a short fake delay. A real LLM call is a Sprint 3 change to one backend function.
+- Non-Goals: no login or multiple users; no external LLM call before Sprint 3; no deployment; no hosting, running, or judging code; no study plans, leaderboards, or social features.
 ## 2. Invariants & Negative Constraints
-- The app MUST consist of ./index.html, ./style.css, ./app.js, and ./mock_data.json.
+- The frontend MUST consist of ./index.html, ./style.css, and ./app.js. Backend files are listed in 6.2.
 - All styling MUST reside in ./style.css (no inline style="..." attributes). Inline event handlers (onclick= etc.) MUST NOT be used; all listeners are attached in app.js.
 - The page MUST NOT load external CSS frameworks, fonts, scripts, or CDNs. JavaScript MUST be vanilla.
 - style.css MUST begin with the universal reset: *, *::before, *::after { box-sizing: border-box; }.
@@ -17,12 +17,10 @@
 - App state MUST be a single entries array in app.js. renderEntries() MUST rebuild the list from that array. No other code may create or remove cards directly.
 - Edit, delete, and Send to AI MUST be handled by event delegation on the list container, using data-action attributes on the buttons.
 - User-entered text MUST be inserted with textContent (or equivalent), never innerHTML.
-- Loading MUST live in one function, loadEntries(), and the fake AI MUST live in one function, requestAiReview(entry), which returns a Promise. This isolates the two lines Sprints 2 and 3 will replace.
+- Loading MUST live in one function, loadEntries(), and the review request MUST live in one function, requestAiReview(entry), which returns a Promise. Both MUST send requests through apiRequest (6.7).
 - localStorage, sessionStorage, and cookies MUST NOT be used.
-- mock_data.json MUST contain at least 5 entries using exactly these fields: id, problem_name, source, topic, difficulty, result, time_minutes, approach, struggles, ai_review, created_at.
-- In mock_data.json, at least 2 entries MUST have an ai_review object, at least 2 MUST have ai_review: null, at least 1 MUST have an empty approach, and the entries MUST include all three results (Solved, Partial, Failed).
 - An ai_review object MUST have exactly four string fields: key_concept, knowledge_gap, takeaway, area_for_review.
-- New entry ids MUST be max(existing ids) + 1 (or 1 if the list is empty).
+- Entry ids MUST be assigned by the server (6.3). The client MUST NOT generate ids.
 ## 3. UI Content & Interface Contract
 - The page MUST use semantic landmarks: one `<header>`, one `<main>`, one `<footer>`, and each content group inside its own `<section>` with a heading.
 - There MUST be exactly one `<h1>`, and heading levels MUST NOT skip (h1 then h2 then h3).
@@ -30,13 +28,13 @@
 - Solve rate = Solved entries / total entries, rounded to a whole percent. Partial does not count as solved.
 - Stats MUST update on every add, edit, and delete.
 - With zero entries, Solve rate and Average time MUST display "—", never NaN or 0%.
-- Form section (`<h2>` "New reflection"), with a visible `<label>` on every field:  
+- Form section (`<h2>` "New reflection"), with a visible `<label>` on every field:
 - Required: problem name (text, max 100 characters), source (select: LeetCode, HackerRank, NeetCode, Other), difficulty (select: Easy, Medium, Hard), result (select: Solved, Partial, Failed), time in minutes (number).
 - Optional: topic (text), approach (textarea), struggles (textarea).
 - Time MUST be a whole number from 1 to 600.
 - The form MUST NOT submit if a required field is empty or time is outside 1 to 600. Each error MUST appear as visible text next to its field, and MUST clear as soon as the user edits that field. alert() MUST NOT be used for validation.
 - The form root MUST carry data-mode="add" or data-mode="edit". In edit mode the submit button reads "Save changes" and a "Cancel" button appears; in add mode the submit button reads "Add entry".
-- A successful add or save MUST reset the form to add mode and clear all fields.
+- A successful add or save (the server returns 201 or 200) MUST reset the form to add mode and clear all fields.
 - Entry list section (`<h2>` "Your entries"), with a count such as "5 entries".
 - Each entry MUST be an `<article class="card">` inside a container that uses display: grid or display: flex with gap.
 - Each card MUST carry data-id, data-result, data-difficulty, and data-ai-state (none, loading, or done) attributes, and CSS MUST style from them.
@@ -44,39 +42,133 @@
 - Badges MUST contain text (Solved, Medium, etc.), not color alone, and MUST differ visually per value.
 - Each card MUST have Edit, Delete, and Send to AI buttons.
 - An empty list MUST show: "No entries yet. Add your first reflection using the form."
+- At 768px and wider, the form panel and the entry list MUST each scroll independently.
 - Edit: clicking Edit MUST fill the form with that entry's values and switch the form to edit mode. Saving MUST update the card in place without changing its position or id. Cancel MUST return the form to add mode with no changes.
-- Delete: MUST ask for confirmation first (window.confirm() is acceptable). Cancelling MUST keep the entry. Confirming MUST remove the card and update the stats. If the entry being edited is deleted, the form MUST return to add mode.
-- Two separate scroll bars for form section and list of submitted problems 
+- Delete: MUST ask for confirmation first (window.confirm() is acceptable). Cancelling MUST keep the entry. Confirming MUST send the delete request and, once the server returns 204, remove the card and update the stats. If the entry being edited is deleted, the form MUST return to add mode.
 - Send to AI:
 - The button MUST have the HTML disabled attribute when the entry's approach is empty or only whitespace, with a visible hint: "Add approach text to enable AI review."
-- On click, the button MUST become disabled and read "Analyzing…", and the card's data-ai-state MUST be loading for about 1.5 seconds. A second click during loading MUST NOT start a second request.
-- When the Promise resolves, the entry's ai_review MUST be set, the card MUST show the summary, and the button MUST read "Re-run review".
-- AI summary panel on a card MUST show four labeled fields: Key concept, Knowledge gap, Takeaway, Area for review.
+- On click, the button MUST become disabled and read "Analyzing…", and the card's data-ai-state MUST be loading while the request is pending (about 1.5 seconds with the canned review). A second click during loading MUST NOT start a second request.
+- When the request succeeds, the entry's ai_review MUST be set from the server's response, the card MUST show the summary, and the button MUST read "Re-run review".
+- The AI summary panel on a card MUST show four labeled fields: Key concept, Knowledge gap, Takeaway, Area for review.
 - A card with no summary MUST show: "No AI review yet. Send this entry to get a structured summary."
-- Every button MUST have four visually distinct states in style.css: :hover, :focus-visible, :active, and :disabled.Disabled buttons MUST NOT look clickable and MUST NOT react to hover.
-- If a request fails to load mock_data.json, the list MUST show: "Couldn't load entries. Check that the page is served from a local server." Nothing may throw an uncaught error.
+- Every button MUST have four visually distinct states in style.css: :hover, :focus-visible, :active, and :disabled. Disabled buttons MUST NOT look clickable and MUST NOT react to hover.
+- If GET /api/entries fails, the list MUST show: "Couldn't load entries. Make sure the Flask server is running at localhost:5000." Nothing may throw an uncaught error.
 ## 4. Acceptance Checklist
- - [x] Exactly one `<h1>`, one `<header>`, one `<main>`, one `<footer>`, and no skipped heading levels.
- - [x] No inline style="..." or on...= attributes anywhere in index.html.
- - [x] style.css begins with the box-sizing reset, uses no ID selectors, and uses rem for spacing and font sizes.
- - [x] Page loads at least 5 entries from mock_data.json and renders one card each.
- - [x] Both card states appear on load: some with an AI summary, some with the empty state.
- - [x] Every card is an `<article class="card">` inside a grid or flex container with gap.
- - [x] A valid form submission adds a card without a page reload and updates all three stats.
- - [x] Submission is blocked, with visible messages and no alert(), for: empty problem name, no time, time of 0, negative time, decimal time, and time above 600.
- - [x] Error messages disappear as soon as the user edits the field.
- - [x] Edit fills the form, switches to edit mode, and saves in place. Cancel restores add mode with no changes.
- - [x] Delete asks for confirmation. Cancelling keeps the card. Confirming removes it and updates the stats.
- - [x] Deleting every entry shows the empty-list message and "—" in the stats, with no NaN.
- - [x] Send to AI is disabled for the entry with an empty approach.
- - [x] Send to AI shows a loading state for about 1.5 seconds, then displays all four summary fields. Double-clicking does not fire two requests.
- - [x] Entering `<b>test</b>` or `<script>` in any text field displays it as plain text.
- - [x] No horizontal scrollbar at 375px width. Two columns at 768px and wider, one column below.
- - [x] Hover, focus ring, active, and disabled states are all visibly different on buttons.
- - [x] Page works when served with python3 -m http.server and shows the load-error message when mock_data.json is unreachable.
- - [x] Browser console is empty in Chrome, Firefox, and Edge.
+ - [] Exactly one `<h1>`, one `<header>`, one `<main>`, one `<footer>`, and no skipped heading levels.
+ - [] No inline style="..." or on...= attributes anywhere in index.html.
+ - [] style.css begins with the box-sizing reset, uses no ID selectors, and uses rem for spacing and font sizes.
+ - [] Page loads the entries from GET /api/entries and renders one card each.
+ - [] Both card states appear on load: some with an AI summary, some with the empty state.
+ - [] Every card is an `<article class="card">` inside a grid or flex container with gap.
+ - [] A valid form submission adds a card without a page reload and updates all three stats.
+ - [] Submission is blocked, with visible messages and no alert(), for: empty problem name, no time, time of 0, negative time, decimal time, and time above 600.
+ - [] Error messages disappear as soon as the user edits the field.
+ - [] Edit fills the form, switches to edit mode, and saves in place. Cancel restores add mode with no changes.
+ - [] Delete asks for confirmation. Cancelling keeps the card. Confirming removes it and updates the stats.
+ - [] Deleting every entry shows the empty-list message and "—" in the stats, with no NaN.
+ - [] Send to AI is disabled for the entry with an empty approach.
+ - [] Send to AI shows a loading state for about 1.5 seconds, then displays all four summary fields. Double-clicking does not fire two requests.
+ - [] Entering `<b>test</b>` or `<script>` in any text field displays it as plain text.
+ - [] No horizontal scrollbar at 375px width. Two columns at 768px and wider, one column below.
+ - [] Hover, focus ring, active, and disabled states are all visibly different on buttons.
+ - [] The page shows the load-error message when the API is unreachable (server stopped).
+ - [] Browser console is empty in Chrome, Firefox, and Edge.
 ## 5. Audit Protocol
 - Inspect the generated code line by line with git diff --staged before committing.
-- Commit in this order: SPEC.md, mock_data.json, index.html, style.css, then app.js in pieces (load and render, form validation, edit and delete, fake AI), one commit each.
-- Check an item off only after verifying it in the browser.
-- Record each place the AI broke a MUST line (and how it was fixed) for the AI usage log in SPRINT1.md.
+- Commit spec changes before the code that implements them, each as its own commit.
+- Sprint 2 Phase 1 commit order: SPEC.md, .gitignore, requirements, seed data, storage.py, validation.py, ai.py, app.py routes (read, create, update and delete, review and error handlers), frontend wiring (markup, load, add and edit, delete and review), mock data removal, SPRINT2.md.
+- Check an item off only after verifying it in the browser or with curl.
+- Record each place the AI broke a MUST line (and how it was fixed) for the AI usage log of the current sprint (SPRINT1.md, SPRINT2.md).
+## 6. Sprint 2, Phase 1
+## 6.1 Scope 
+- Phase 1 adds a Flask backend that stores entries in a local JSON file. Phase 2 replaces ONLY the storage layer with SQLite. Route handlers, the API contract in 6.5, and the frontend fetch() code MUST NOT change in Phase 2.
+- Lines marked "(Phase 1 only)" are replaced by section 7 when Phase 2 is added.
+- Non-Goals: no authentication or multiple users; no external LLM call; no deployment; (Phase 1 only) no SQL or database.
+## 6.2 Project Layout 
+- backend/app.py, backend/storage.py, backend/validation.py, backend/ai.py, backend/requirements.txt, and backend/data/seed_entries.json MUST exist.
+- (Phase 1 only) backend/data/entries.json is the live data file. It MUST be created at runtime and MUST be listed in .gitignore.
+- frontend/ keeps index.html, style.css, and app.js. frontend/mock_data.json MUST be deleted once the frontend is wired to the API.
+- Flask MUST serve ../frontend at / so the page and the API share the origin http://localhost:5000. No CORS package is used.
+- .gitignore MUST exclude venv/, .venv/, __pycache__/, *.pyc, .pytest_cache/, .env, and (Phase 1 only) backend/data/entries.json.
+- requirements.txt MUST list every dependency with a pinned version (from pip freeze).
+## 6.3 Backend Invariants 
+- app.py MUST contain only route handlers, error handlers, and app setup. It MUST NOT read or write files and MUST NOT contain validation rules.
+- storage.py MUST be the only module that touches stored data. It MUST expose exactly: list_entries(), get_entry(entry_id), create_entry(fields), update_entry(entry_id, fields), delete_entry(entry_id), and save_review(entry_id, review). These signatures MUST NOT change in Phase 2.
+- Functions return plain dicts. get_entry, update_entry, and save_review return None when the id does not exist. delete_entry returns a bool.
+- (Phase 1 only) Every load-modify-save MUST run under a single threading.Lock.
+- (Phase 1 only) Writes MUST go to a temporary file in the same folder, then os.replace() onto the data file.
+- (Phase 1 only) If data/entries.json does not exist at startup, storage.py MUST create it by copying data/seed_entries.json.
+- (Phase 1 only) The data file is a UTF-8 JSON array of entry objects.
+- (Phase 1 only) New ids MUST be max(existing ids) + 1 (1 if the file is empty).
+- validation.py MUST expose validate_entry(payload) returning (clean, errors). It MUST NOT import Flask.
+- ai.py MUST expose generate_review(entry) returning the four-field review dict (key_concept, knowledge_gap, takeaway, area_for_review) built from the entry. It MAY sleep 1.5 seconds to simulate latency, with a comment saying to remove it in Sprint 3. Sprint 3 replaces only this function's body.
+- Every record MUST have exactly these fields: id, problem_name, source, topic, difficulty, result, time_minutes, approach, struggles, ai_review, created_at.
+- Types MUST match the domain: id and time_minutes are ints, text fields are stripped strings, ai_review is null or a dict of four strings, created_at is a UTC ISO 8601 string ending in Z.
+- Ids are assigned by the server. Clients MUST NOT set id, created_at, or ai_review through POST or PUT. Those keys MUST be ignored. created_at is set by the server.
+- Client data MUST be read with payload.get(key, default), never payload[key].
+- The server MUST validate every request even though the frontend validates too.
+- The app MUST run on 127.0.0.1:5000 with debug mode off. Responses MUST NOT contain stack traces. Unhandled exceptions MUST be logged server-side with app.logger.exception.
+- The path parameter MUST be `<int:entry_id>`.
+## 6.4 Validation Rules
+- The body MUST parse as a JSON object (request.get_json(silent=True)). Anything else MUST return 400 with {"error": "Request body must be a JSON object."}.
+- problem_name: required string, non-empty after stripping, at most 100 characters.
+- source: required, one of LeetCode, HackerRank, NeetCode, Other.
+- difficulty: required, one of Easy, Medium, Hard.
+- result: required, one of Solved, Partial, Failed.
+- time_minutes: required, a JSON integer from 1 to 600. Booleans, floats (including 2.5), numeric strings, and null MUST be rejected.
+- topic: optional string, at most 100 characters, default "".
+- approach and struggles: optional strings, at most 2000 characters each, default "".
+- A value of the wrong type for any field MUST be a validation error, not an exception.
+- Unknown keys MUST be ignored.
+- All invalid fields MUST be reported together: {"error": "Validation failed.", "fields": {"time_minutes": "Must be a whole number from 1 to 600."}}.
+- PUT MUST use the same validation as POST and replace the eight user fields. It MUST keep id, created_at, and ai_review unchanged.
+## 6.5 API Contract
+- Method: GET , Path: /api/entires , Request body: none , Success: 200, JSON array of entires , Error responses: 500 
+- Method: GET, Path:/api/entries/`<id>`, Request body: none, Success: 200, one entry, Error responses: 404
+- Method: POST, Path: /api/entries, Request Body: the eight user fields, Success: 201, the created entry (new id, created_at, ai_review: null), Error Responses: 400 
+- Method: PUT, Path: /api/entries/`<id>`, Request Body: the eight users fields, Success: 200, the updated entry, Error Responses: 400, 404
+- Method: DELETE, Path: /api/entries/`<id>`, Request Body: none, Success: 204, empty body, Error Responses: 404 
+- Method: POST, Path: /api/entries/`<id>`/review, Request Body: none, Success: 200, the updated entry with ai_review set, Error Responses: 400 (entry has no approach text), 404
+- Error bodies MUST be JSON: {"error": "`<message>`"}, plus fields for validation failures.
+- Unknown routes MUST return 404 JSON, wrong verbs 405 JSON, and unhandled exceptions 500 {"error": "Internal server error."}.
+- The review route MUST call ai.generate_review outside any storage lock, then call save_review. If the entry was deleted in the meantime, it MUST return 404.
+## 6.6 Seed Data
+- backend/data/seed_entries.json MUST be a copy of the Sprint 1 mock_data.json: 5 entries, ids 1 to 5, using exactly the record fields in 6.3, at least 2 with an ai_review object, at least 2 with ai_review: null, at least 1 with an empty approach, and all three results (Solved, Partial, Failed).
+## 6.7 Frontend Integration 
+- All HTTP MUST go through one helper, apiRequest(path, options), which returns { ok, status, data }. A network failure MUST return { ok: false, status: 0, data: { error: "..." } } and MUST NOT throw.
+- URLs MUST be relative (/api/entries). No hardcoded host or port.
+- app.js MUST NOT contain a hardcoded entries array. entries is filled only from GET /api/entries.
+- The UI MUST NOT change entries until the server confirms the change. The server's response is the source of truth.
+- loadEntries(): on 200, render. Otherwise show the load-error message from section 3.
+- Submit sends POST (add mode) or PUT (edit mode). The submit button MUST be disabled while the request is pending.
+- 201: append the returned entry. 200: replace that entry in place (same position).
+- 400: show each message from fields next to its input (time_minutes maps to the input id time-minutes). A field with no error element, or an error with no fields, MUST show in the form-level .form-error element. The form values MUST be kept.
+- 404: show "That entry no longer exists.", then remove it from entries.
+- Status 0 or 500: show a status message and keep the form values.
+- Delete: after confirmation, send DELETE. On 204, remove the entry. On 404, remove it and show a message. On any other failure, keep the entry and show a status message.
+- requestAiReview(entry) MUST send POST /api/entries/`<id>`/review. On 200, replace the entry. On failure, clear the pending state, re-enable the button, and show a status message.
+- A .status-message element with role="status" MUST show request failures and MUST clear on the next user action.
+- The topic, approach, and struggles inputs MUST carry maxlength values matching 6.4 (100, 2000, 2000).
+- Client-side validation from section 3 stays for fast feedback. The server is the authority.
+- All rules in section 2 (textContent, event delegation, no inline handlers, no inline styles) still apply.
+## 6.8 Sprint 2 Checklist 
+ - [] From a fresh clone, pip install -r requirements.txt and python app.py start with no errors.
+ - [] GET /api/entries returns 200 with the 5 seed entries.
+ - [] GET /api/entries/`<id>` returns 200 for a real id and 404 JSON for an unknown id.
+ - [] POST with a valid body returns 201 with a new id, a server created_at, and ai_review: null.
+ - [] POST returns 400 listing every bad field for: empty problem_name, missing source, bad enum value, time_minutes of 0, 601, 2.5, "10", and true, and a 101-character name.
+ - [] POST returns 400 for a non-JSON body and for a JSON array body.
+ - [] PUT returns 200 and keeps id, created_at, and ai_review. It returns 400 for invalid input and 404 for an unknown id.
+ - [] DELETE returns 204 with an empty body, then 404 for the same id.
+ - [] POST /api/entries/`<id>`/review returns 200 and stores the review. It returns 400 for an entry with no approach text and 404 for an unknown id.
+ - [] An unknown route returns 404 JSON, a wrong verb returns 405 JSON, and a forced exception returns 500 JSON with no traceback.
+ - [] After Ctrl+C and a restart, added, edited, deleted, and reviewed entries are still as left.
+ - [] (Phase 1 only) Deleting backend/data/entries.json and restarting recreates it from the seed.
+ - [] (Phase 1 only) Two simultaneous POSTs both succeed with different ids and a valid data file.
+ - [] git status shows no venv/, __pycache__/, or entries.json.
+ - [] frontend/mock_data.json is deleted and app.js contains no hardcoded entries.
+ - [] The Network tab shows /api/entries requests for load, add, edit, delete, and review.
+ - [] Adding an entry shows the server-assigned id and the card is still there after a page refresh.
+ - [] Server 400 messages appear in the UI (test by removing the maxlength or validation in DevTools and submitting a bad value).
+ - [] With the server stopped, clicking Add shows a status message, keeps the form values, and logs no uncaught error.
+ - [] The browser console is empty in Chrome, Firefox, and Edge.
