@@ -64,6 +64,29 @@ def add_entry():
     return jsonify(create_entry(cleaned)), 201
 
 
+@app.put("/api/entries/<int:entry_id>")
+def edit_entry(entry_id):
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Request body must be a JSON object."}), 400
+
+    cleaned, errors = validate_entry(payload)
+    if errors:
+        return jsonify({"error": "Validation failed.", "fields": errors}), 400
+
+    entry = update_entry(entry_id, cleaned)
+    if entry is None:
+        return jsonify({"error": "Entry not found."}), 404
+    return jsonify(entry), 200
+
+
+@app.delete("/api/entries/<int:entry_id>")
+def remove_entry(entry_id):
+    if not delete_entry(entry_id):
+        return jsonify({"error": "Entry not found."}), 404
+    return "", 204
+
+
 def now_iso():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
