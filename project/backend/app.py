@@ -2,7 +2,8 @@ import os
 import json
 from datetime import datetime, timezone
 
-from flask import Flask, send_from_directory
+from flask import Flask, jsonify, send_from_directory
+from werkzeug.exceptions import HTTPException
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -21,6 +22,15 @@ EDITABLE_FIELDS = (
 )
 
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
+
+
+@app.errorhandler(Exception)
+def handle_exception(error):
+    if isinstance(error, HTTPException):
+        return jsonify({"error": error.description}), error.code
+
+    app.logger.exception("Unhandled exception")
+    return jsonify({"error": "Internal server error."}), 500
 
 
 @app.get("/")
