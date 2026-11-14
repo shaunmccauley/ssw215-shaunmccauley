@@ -32,6 +32,87 @@ def now_iso():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def validate_entry(payload):
+    payload = payload if isinstance(payload, dict) else {}
+    cleaned = {}
+    errors = {}
+    allowed_sources = ("LeetCode", "HackerRank", "NeetCode", "Other")
+    allowed_difficulties = ("Easy", "Medium", "Hard")
+    allowed_results = ("Solved", "Partial", "Failed")
+
+    problem_name = payload.get("problem_name")
+    if not isinstance(problem_name, str):
+        errors["problem_name"] = "Problem name must be a string."
+        cleaned["problem_name"] = ""
+    else:
+        cleaned["problem_name"] = problem_name.strip()
+        if not cleaned["problem_name"]:
+            errors["problem_name"] = "Problem name is required."
+        elif len(cleaned["problem_name"]) > 100:
+            errors["problem_name"] = (
+                "Problem name must be 100 characters or fewer."
+            )
+
+    for field, allowed, label in (
+        ("source", allowed_sources, "Source"),
+        ("difficulty", allowed_difficulties, "Difficulty"),
+        ("result", allowed_results, "Result"),
+    ):
+        value = payload.get(field)
+        if not isinstance(value, str):
+            errors[field] = f"{label} must be a string."
+            cleaned[field] = ""
+        else:
+            cleaned[field] = value.strip()
+            if cleaned[field] not in allowed:
+                errors[field] = (
+                    f"{label} must be one of: {', '.join(allowed)}."
+                )
+
+    time_minutes = payload.get("time_minutes")
+    if (
+        isinstance(time_minutes, bool)
+        or not isinstance(time_minutes, int)
+        or not 1 <= time_minutes <= 600
+    ):
+        errors["time_minutes"] = "Time must be a whole number from 1 to 600."
+        cleaned["time_minutes"] = None
+    else:
+        cleaned["time_minutes"] = time_minutes
+
+    for field in ("topic", "approach", "struggles"):
+        value = payload.get(field, "")
+        if not isinstance(value, str):
+            errors[field] = f"{field.replace('_', ' ').capitalize()} must be a string."
+            cleaned[field] = ""
+        else:
+            cleaned[field] = value.strip()
+
+    return cleaned, errors
+
+
+def build_canned_review(entry):
+    problem_name = entry.get("problem_name", "")
+    return {
+        "key_concept": (
+            f"The central pattern in {problem_name} is to break the problem "
+            "into smaller, testable decisions."
+        ),
+        "knowledge_gap": (
+            "Connect the chosen data structure to the operation that must stay "
+            "efficient."
+        ),
+        "takeaway": (
+            "State the invariant before coding, then use it to guide each "
+            "implementation step."
+        ),
+        "area_for_review": (
+            "Time complexity, edge cases, and the tradeoffs of alternative "
+            "approaches."
+        ),
+    }
+
+
 def _load_entries():
     if not os.path.exists(DATA_FILE):
         with open(SEED_FILE, "r", encoding="utf-8") as seed_file:
