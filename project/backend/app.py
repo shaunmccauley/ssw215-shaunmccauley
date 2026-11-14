@@ -1,5 +1,6 @@
 import os
 import json
+import sqlite3
 from datetime import datetime, timezone
 
 from flask import Flask, jsonify, request, send_from_directory
@@ -8,8 +9,8 @@ from werkzeug.exceptions import HTTPException
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(BASE_DIR, "..", "frontend")
-DATA_FILE = os.path.join(BASE_DIR, "data.json")
-SEED_FILE = os.path.join(BASE_DIR, "seed_data.json")
+DB_FILE = os.path.join(BASE_DIR, "reflections.db")
+SCHEMA_FILE = os.path.join(BASE_DIR, "schema.sql")
 EDITABLE_FIELDS = (
     "problem_name",
     "source",
@@ -185,75 +186,158 @@ def build_canned_review(entry):
     }
 
 
-def _load_entries():
-    if not os.path.exists(DATA_FILE):
-        with open(SEED_FILE, "r", encoding="utf-8") as seed_file:
-            entries = json.load(seed_file)
-        _save_entries(entries)
-        return entries
-
-    with open(DATA_FILE, "r", encoding="utf-8") as data_file:
-        return json.load(data_file)
+def get_db():
+    connection = sqlite3.connect(DB_FILE)
+    connection.row_factory = sqlite3.Row
+    return connection
 
 
-def _save_entries(entries):
-    with open(DATA_FILE, "w", encoding="utf-8") as data_file:
-        json.dump(entries, data_file, indent=2)
+def init_db():
+    with open(SCHEMA_FILE, "r", encoding="utf-8") as schema_file:
+        schema = schema_file.read()
+
+    connection = get_db()
+    try:
+        connection.executescript(schema)
+        connection.commit()
+    finally:
+        connection.close()
 
 
-def get_all_entries():
-    return _load_entries()
-
-
-def get_entry(entry_id):
-    for entry in _load_entries():
-        if entry.get("id") == entry_id:
-            return entry
-    return None
-
-
-def create_entry(data):
-    entries = _load_entries()
-    next_id = max((entry.get("id", 0) for entry in entries), default=0) + 1
-    entry = {field: data.get(field, "") for field in EDITABLE_FIELDS}
-    entry["id"] = next_id
-    entry["ai_review"] = None
-    entry["created_at"] = now_iso()
-    entries.append(entry)
-    _save_entries(entries)
+def _row_to_entry(row):
+    entry = dict(row)
+    entry["ai_review"] = json.loads(row["ai_review"]) if row["ai_review"] else None
     return entry
 
 
+def get_all_entries():
+    connection = get_db()
+    try:
+        rows = connection.execute(
+            "SELECT id, problem_name, source, topic, difficulty, result, "
+            "time_minutes, approach, struggles, ai_review, created_at "
+            "FROM entries ORDER BY id"
+        ).fetchall()
+        return [_row_to_entry(row) for row in rows]
+    finally:
+        connection.close()
+
+
+def get_entry(entry_id):
+    connection = get_db()
+    try:
+        row = connection.execute(
+            "SELECT id, problem_name, source, topic, difficulty, result, "
+            "time_minutes, approach, struggles, ai_review, created_at "
+            "FROM entries WHERE id = ?",
+            (entry_id,),
+        ).fetchone()
+        return _row_to_entry(row) if row is not None else None
+    finally:
+        connection.close()
+
+
+def create_entry(data):
+    connection = get_db()
+    try:
+        cursor = connection.execute(
+            "INSERT INTO entries "
+            "(problem_name, source, topic, difficulty, result, time_minutes, "
+            "approach, struggles, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                data.get("problem_name", ""),
+                data.get("source", ""),
+                data.get("topic", ""),
+                data.get("difficulty", ""),
+                data.get("result", ""),
+                data.get("time_minutes"),
+                data.get("approach", ""),
+                data.get("struggles", ""),
+                now_iso(),
+            ),
+        )
+        connection.commit()
+        row = connection.execute(
+            "SELECT id, problem_name, source, topic, difficulty, result, "
+            "time_minutes, approach, struggles, ai_review, created_at "
+            "FROM entries WHERE id = ?",
+            (cursor.lastrowid,),
+        ).fetchone()
+        return _row_to_entry(row)
+    finally:
+        connection.close()
+
+
 def update_entry(entry_id, data):
-    entries = _load_entries()
-    for entry in entries:
-        if entry.get("id") == entry_id:
-            for field in EDITABLE_FIELDS:
-                entry[field] = data.get(field, "")
-            _save_entries(entries)
-            return entry
-    return None
+    connection = get_db()
+    try:
+        cursor = connection.execute(
+            "UPDATE entries SET problem_name = ?, source = ?, topic = ?, "
+            "difficulty = ?, result = ?, time_minutes = ?, approach = ?, "
+            "struggles = ? WHERE id = ?",
+            (
+                data.get("problem_name", ""),
+                data.get("source", ""),
+                data.get("topic", ""),
+                data.get("difficulty", ""),
+                data.get("result", ""),
+                data.get("time_minutes"),
+                data.get("approach", ""),
+                data.get("struggles", ""),
+                entry_id,
+            ),
+        )
+        if cursor.rowcount == 0:
+            return None
+
+        connection.commit()
+        row = connection.execute(
+            "SELECT id, problem_name, source, topic, difficulty, result, "
+            "time_minutes, approach, struggles, ai_review, created_at "
+            "FROM entries WHERE id = ?",
+            (entry_id,),
+        ).fetchone()
+        return _row_to_entry(row)
+    finally:
+        connection.close()
 
 
 def delete_entry(entry_id):
-    entries = _load_entries()
-    for index, entry in enumerate(entries):
-        if entry.get("id") == entry_id:
-            del entries[index]
-            _save_entries(entries)
-            return True
-    return False
+    connection = get_db()
+    try:
+        cursor = connection.execute(
+            "DELETE FROM entries WHERE id = ?",
+            (entry_id,),
+        )
+        connection.commit()
+        return cursor.rowcount > 0
+    finally:
+        connection.close()
 
 
 def save_review(entry_id, review):
-    entries = _load_entries()
-    for entry in entries:
-        if entry.get("id") == entry_id:
-            entry["ai_review"] = review
-            _save_entries(entries)
-            return entry
-    return None
+    connection = get_db()
+    try:
+        cursor = connection.execute(
+            "UPDATE entries SET ai_review = ? WHERE id = ?",
+            (json.dumps(review), entry_id),
+        )
+        if cursor.rowcount == 0:
+            return None
+
+        connection.commit()
+        row = connection.execute(
+            "SELECT id, problem_name, source, topic, difficulty, result, "
+            "time_minutes, approach, struggles, ai_review, created_at "
+            "FROM entries WHERE id = ?",
+            (entry_id,),
+        ).fetchone()
+        return _row_to_entry(row)
+    finally:
+        connection.close()
 
 
 if __name__ == "__main__":
+    init_db()
     app.run(host="localhost", port=5000, debug=False)
