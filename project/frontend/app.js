@@ -378,19 +378,30 @@ function fillFormForEdit(entry) {
 document.getElementById('cancel-edit').addEventListener('click', resetFormToAddMode);
 
 function requestAiReview(entry) {
-  return new Promise((resolve) => {
-    window.setTimeout(() => {
-      resolve({
-        key_concept: `The central pattern in ${entry.problem_name} is to break the problem into smaller, testable decisions.`,
-        knowledge_gap: 'Connect the chosen data structure to the operation that must stay efficient.',
-        takeaway: 'State the invariant before coding, then use it to guide each implementation step.',
-        area_for_review: 'Time complexity, edge cases, and the tradeoffs of alternative approaches.'
-      });
-    }, 1500);
+  const reviewRequest = fetch(`/api/entries/${entry.id}/review`, {
+    method: 'POST'
+  }).then(async (response) => {
+    let body = {};
+    try {
+      body = await response.json();
+    } catch (error) {
+      body = {};
+    }
+
+    if (!response.ok) {
+      throw new Error(body.error || 'Unable to request AI review.');
+    }
+    return body;
   });
+
+  const minimumDelay = new Promise((resolve) => {
+    window.setTimeout(resolve, 1500);
+  });
+
+  return Promise.all([reviewRequest, minimumDelay]).then(([updatedEntry]) => updatedEntry);
 }
 
-document.getElementById('entries-list').addEventListener('click', (event) => {
+document.getElementById('entries-list').addEventListener('click', async (event) => {
   const actionButton = event.target.closest('[data-action]');
   if (!actionButton) {
     return;
@@ -421,15 +432,26 @@ document.getElementById('entries-list').addEventListener('click', (event) => {
     actionButton.disabled = true;
     actionButton.textContent = 'Analyzing…';
 
-    requestAiReview(entry).then((review) => {
+    try {
+      const updatedEntry = await requestAiReview(entry);
       pendingReviewIds.delete(entry.id);
-      if (!entries.includes(entry)) {
+      const entryIndex = entries.findIndex((item) => String(item.id) === String(entry.id));
+      if (entryIndex === -1) {
         return;
       }
 
-      entry.ai_review = review;
+      entries[entryIndex] = updatedEntry;
       renderEntries();
-    });
+    } catch (error) {
+      pendingReviewIds.delete(entry.id);
+      if (entries.includes(entry)) {
+        card.dataset.aiState = entry.ai_review ? 'done' : 'none';
+        actionButton.disabled = false;
+        actionButton.textContent = entry.ai_review ? 'Re-run review' : 'Send to AI';
+      }
+      document.getElementById('form-error').textContent =
+        error instanceof Error ? error.message : 'Unable to request AI review.';
+    }
     return;
   }
 
@@ -439,11 +461,35 @@ document.getElementById('entries-list').addEventListener('click', (event) => {
       return;
     }
 
-    entries = entries.filter((item) => item !== entry);
-    if (reflectionForm.dataset.editId === String(entry.id)) {
-      resetFormToAddMode();
+    try {
+      const response = await fetch(`/api/entries/${entry.id}`, {
+        method: 'DELETE'
+      });
+
+      let body = {};
+      if (response.status !== 204) {
+        try {
+          body = await response.json();
+        } catch (error) {
+          body = {};
+        }
+      }
+
+      if (response.status === 204 || response.status === 404) {
+        entries = entries.filter((item) => String(item.id) !== String(entry.id));
+        if (reflectionForm.dataset.editId === String(entry.id)) {
+          resetFormToAddMode();
+        }
+        renderEntries();
+        return;
+      }
+
+      document.getElementById('form-error').textContent =
+        body.error || 'Unable to delete entry.';
+    } catch (error) {
+      document.getElementById('form-error').textContent =
+        "Couldn't delete entry. Check that the Flask server is running.";
     }
-    renderEntries();
   }
 });
 
