@@ -87,6 +87,19 @@ def remove_entry(entry_id):
     return "", 204
 
 
+@app.post("/api/entries/<int:entry_id>/review")
+def review_entry(entry_id):
+    entry = get_entry(entry_id)
+    if entry is None:
+        return jsonify({"error": "Entry not found."}), 404
+    approach = entry.get("approach", "")
+    if not isinstance(approach, str) or not approach.strip():
+        return jsonify({"error": "Add approach text to enable AI review."}), 400
+
+    review = build_canned_review(entry)
+    return jsonify(save_review(entry_id, review)), 200
+
+
 def now_iso():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
