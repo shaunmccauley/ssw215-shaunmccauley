@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime, timezone
 
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
 from werkzeug.exceptions import HTTPException
 
 
@@ -36,6 +36,32 @@ def handle_exception(error):
 @app.get("/")
 def index():
     return send_from_directory(FRONTEND_DIR, "index.html")
+
+
+@app.get("/api/entries")
+def list_entries():
+    return jsonify(get_all_entries()), 200
+
+
+@app.get("/api/entries/<int:entry_id>")
+def read_entry(entry_id):
+    entry = get_entry(entry_id)
+    if entry is None:
+        return jsonify({"error": "Entry not found."}), 404
+    return jsonify(entry), 200
+
+
+@app.post("/api/entries")
+def add_entry():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Request body must be a JSON object."}), 400
+
+    cleaned, errors = validate_entry(payload)
+    if errors:
+        return jsonify({"error": "Validation failed.", "fields": errors}), 400
+
+    return jsonify(create_entry(cleaned)), 201
 
 
 def now_iso():
