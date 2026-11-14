@@ -3,10 +3,10 @@ const pendingReviewIds = new Set();
 
 async function loadEntries() {
   try {
-    const response = await fetch('./mock_data.json');
+    const response = await fetch('/api/entries');
 
     if (!response.ok) {
-      throw new Error('Unable to load mock data.');
+      throw new Error('Unable to load entries.');
     }
 
     const data = await response.json();
@@ -19,7 +19,7 @@ async function loadEntries() {
     const entriesList = document.getElementById('entries-list');
     const loadError = document.createElement('p');
     loadError.className = 'empty-state';
-    loadError.textContent = "Couldn't load entries. Check that the page is served from a local server.";
+    loadError.textContent = "Couldn't load entries. Check that the Flask server is running.";
     entriesList.replaceChildren(loadError);
   }
 }
