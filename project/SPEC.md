@@ -120,48 +120,48 @@ Database schema (Phase 2)
 - Column: created_at -- Type: TEXT -- Constraints: NOT NULL
 ## 4. Acceptance Checklist
 Frontend
-- [] Exactly one `<h1>`, one `<header>`, one `<main>`, one `<footer>`, and no skipped heading levels.
-- [] No inline style="..." or on...= attributes anywhere in index.html.
-- [] style.css begins with the box-sizing reset, uses no ID selectors, and uses rem for spacing and font sizes.
-- [] Page loads at least 5 entries from GET /api/entries and renders one card each.
-- [] Both card states appear on load: some with an AI summary, some with the empty state.
-- [] Every card is an `<article class="card">` inside a grid or flex container with gap.
-- [] A valid form submission adds a card without a page reload and updates all three stats.
-- [] Submission is blocked, with visible messages and no alert(), for: empty problem name, no time, time of 0, negative time, decimal time, and time above 600.
-- [] Error messages disappear as soon as the user edits the field.
-- [] Edit fills the form, switches to edit mode, and saves in place. Cancel restores add mode with no changes.
-- [] Delete asks for confirmation. Cancelling keeps the card. Confirming removes it and updates the stats.
-- [] Deleting every entry shows the empty-list message and "—" in the stats, with no NaN.
-- [] Send to AI is disabled for the entry with an empty approach.
-- [] Send to AI shows a loading state for about 1.5 seconds, then displays all four summary fields. Double-clicking does not fire two requests.
-- [] Entering `<b>test</b>` or `<script>` in any text field displays it as plain text, including after a page refresh.
-- [] No horizontal scrollbar at 375px width. Two columns at 768px and wider, one column below.
-- [] Hover, focus ring, active, and disabled states are all visibly different on buttons.
-- [] The form section and the entries list scroll independently at 768px and wider.
-- [] Page works when served by Flask at http://localhost:5000 and shows the load-error message when the server is unreachable.
-- [] Browser console is empty in Chrome, Firefox, and Edge.
+- [x] Exactly one `<h1>`, one `<header>`, one `<main>`, one `<footer>`, and no skipped heading levels.
+- [x] No inline style="..." or on...= attributes anywhere in index.html.
+- [x] style.css begins with the box-sizing reset, uses no ID selectors, and uses rem for spacing and font sizes.
+- [x] Page loads at least 5 entries from GET /api/entries and renders one card each.
+- [x] Both card states appear on load: some with an AI summary, some with the empty state.
+- [x] Every card is an `<article class="card">` inside a grid or flex container with gap.
+- [x] A valid form submission adds a card without a page reload and updates all three stats.
+- [x] Submission is blocked, with visible messages and no alert(), for: empty problem name, no time, time of 0, negative time, decimal time, and time above 600.
+- [x] Error messages disappear as soon as the user edits the field.
+- [x] Edit fills the form, switches to edit mode, and saves in place. Cancel restores add mode with no changes.
+- [x] Delete asks for confirmation. Cancelling keeps the card. Confirming removes it and updates the stats.
+- [x] Deleting every entry shows the empty-list message and "—" in the stats, with no NaN.
+- [x] Send to AI is disabled for the entry with an empty approach.
+- [x] Send to AI shows a loading state for about 1.5 seconds, then displays all four summary fields. Double-clicking does not fire two requests.
+- [x] Entering `<b>test</b>` or `<script>` in any text field displays it as plain text, including after a page refresh.
+- [x] No horizontal scrollbar at 375px width. Two columns at 768px and wider, one column below.
+- [x] Hover, focus ring, active, and disabled states are all visibly different on buttons.
+- [x] The form section and the entries list scroll independently at 768px and wider.
+- [x] Page works when served by Flask at http://localhost:5000 and shows the load-error message when the server is unreachable.
+- [x] Browser console is empty in Chrome, Firefox, and Edge.
 Frontend-Backend 
-- [] DevTools Network shows 200 for load, 201 for add, 200 for edit and review, and 204 for delete.
-- [] Invalid input sent directly to the API shows the server's message beside the matching field. Invalid input in the browser shows the client message.
-- [] Stopping the server and clicking Add entry shows a form-level message and no console errors, and the entries array is unchanged.
-- [] Entries added, edited, deleted, and reviewed survive a page refresh.
+- [x] DevTools Network shows 200 for load, 201 for add, 200 for edit and review, and 204 for delete.
+- [x] Invalid input sent directly to the API shows the server's message beside the matching field. Invalid input in the browser shows the client message.
+- [x] Stopping the server and clicking Add entry shows a form-level message and no console errors, and the entries array is unchanged.
+- [x] Entries added, edited, deleted, and reviewed survive a page refresh.
 Backend 
-- [] Repo has /backend and /frontend with the files listed in Section 2, and frontend/mock_data.json is gone.
-- [] .gitignore covers pycache/, .pytest_cache/, venv/, .venv/, .env, *.db, and backend/data.json. git status shows none of them staged.
-- [] requirements.txt is UTF-8 and installs with pip install -r requirements.txt in a fresh venv.
-- [] GET /api/entries returns the five seed entries with correct types (id and time_minutes are numbers, ai_review is an object or null).
-- [] POST with a valid body returns 201 and the new entry with the next id.
-- [] POST returns 400 with a "fields" map for: empty body, non-JSON body, empty problem_name, problem_name over 100 characters, invalid source, difficulty, or result, time_minutes of 0, 601, 2.5, "10", true, and null.
-- [] PUT returns 200 with the updated entry, keeps id, created_at, and ai_review, and returns 404 for a missing id and 400 for an invalid body.
-- [] DELETE returns 204 for an existing id and 404 for a missing id.
-- [] GET /api/entries/999 returns 404 as JSON.
-- [] Review returns 200 with a four-field ai_review, 400 for an entry with empty approach, and 404 for a missing id.
-- [] A forced server error returns {"error": "Internal server error."} with 500 and no stack trace in the response.
-- [] Phase 1: changes survive a Ctrl+C and restart through data.json.
-- [] Phase 2: changes survive a Ctrl+C and restart through the SQLite database.
-- [] Phase 2: the entries table shows id as INTEGER PRIMARY KEY AUTOINCREMENT and every query uses ? placeholders.
-- [] Phase 2: seed.py is safe to run twice (the second run seeds nothing).
-- [] SPRINT2.md has the API table, schema table, run and test steps, AI usage log, and persistence reflection.
+- [x] Repo has /backend and /frontend with the files listed in Section 2, and frontend/mock_data.json is gone.
+- [x] .gitignore covers pycache/, .pytest_cache/, venv/, .venv/, .env, *.db, and backend/data.json. git status shows none of them staged.
+- [x] requirements.txt is UTF-8 and installs with pip install -r requirements.txt in a fresh venv.
+- [x] GET /api/entries returns the five seed entries with correct types (id and time_minutes are numbers, ai_review is an object or null).
+- [x] POST with a valid body returns 201 and the new entry with the next id.
+- [x] POST returns 400 with a "fields" map for: empty body, non-JSON body, empty problem_name, problem_name over 100 characters, invalid source, difficulty, or result, time_minutes of 0, 601, 2.5, "10", true, and null.
+- [x] PUT returns 200 with the updated entry, keeps id, created_at, and ai_review, and returns 404 for a missing id and 400 for an invalid body.
+- [x] DELETE returns 204 for an existing id and 404 for a missing id.
+- [x] GET /api/entries/999 returns 404 as JSON.
+- [x] Review returns 200 with a four-field ai_review, 400 for an entry with empty approach, and 404 for a missing id.
+- [x] A forced server error returns {"error": "Internal server error."} with 500 and no stack trace in the response.
+- [x] Phase 1: changes survive a Ctrl+C and restart through data.json.
+- [x] Phase 2: changes survive a Ctrl+C and restart through the SQLite database.
+- [x] Phase 2: the entries table shows id as INTEGER PRIMARY KEY AUTOINCREMENT and every query uses ? placeholders.
+- [x] Phase 2: seed.py is safe to run twice (the second run seeds nothing).
+- [x] SPRINT2.md has the API table, schema table, run and test steps, AI usage log, and persistence reflection.
 ## 5. Audit Protocol
 - Inspect the generated code line by line with git diff --staged before committing.
 - Sprint 1 commit order (already done): SPEC.md, mock_data.json, index.html, style.css, then app.js in pieces (load and render, form validation, edit and delete, fake AI), one commit each.
