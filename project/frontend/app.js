@@ -241,7 +241,7 @@ requiredFieldIds.forEach((fieldId) => {
   field.addEventListener('change', () => clearFieldError(field));
 });
 
-reflectionForm.addEventListener('submit', (event) => {
+reflectionForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const fields = requiredFieldIds.map((fieldId) => document.getElementById(fieldId));
@@ -266,26 +266,82 @@ reflectionForm.addEventListener('submit', (event) => {
     struggles: document.getElementById('struggles').value.trim()
   };
 
-  if (reflectionForm.dataset.mode === 'edit') {
-    const entry = entries.find((item) => String(item.id) === reflectionForm.dataset.editId);
-    if (entry) {
-      Object.assign(entry, values);
-    }
-  } else {
-    const nextId = entries.length === 0
-      ? 1
-      : Math.max(...entries.map((entry) => Number(entry.id))) + 1;
+  const isEdit = reflectionForm.dataset.mode === 'edit';
+  const editId = reflectionForm.dataset.editId;
+  const endpoint = isEdit ? `/api/entries/${editId}` : '/api/entries';
 
-    entries.push({
-      id: nextId,
-      ...values,
-      ai_review: null,
-      created_at: new Date().toISOString()
+  try {
+    const response = await fetch(endpoint, {
+      method: isEdit ? 'PUT' : 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(values)
     });
-  }
 
-  resetFormToAddMode();
-  renderEntries();
+    let body = {};
+    try {
+      body = await response.json();
+    } catch (error) {
+      body = {};
+    }
+
+    if (response.status === 400) {
+      const fieldErrorIds = {
+        problem_name: 'problem-name-error',
+        source: 'source-error',
+        difficulty: 'difficulty-error',
+        result: 'result-error',
+        time_minutes: 'time-minutes-error'
+      };
+      const fieldsWithErrors = body.fields && typeof body.fields === 'object'
+        ? body.fields
+        : {};
+      Object.entries(fieldsWithErrors).forEach(([fieldName, message]) => {
+        const fieldErrorId = fieldErrorIds[fieldName];
+        if (fieldErrorId) {
+          document.getElementById(fieldErrorId).textContent = message;
+        }
+      });
+
+      const otherFieldErrors = Object.entries(fieldsWithErrors)
+        .filter(([fieldName]) => !fieldErrorIds[fieldName])
+        .map(([, message]) => message);
+      const formError = document.getElementById('form-error');
+      formError.textContent = [body.error, ...otherFieldErrors]
+        .filter(Boolean)
+        .join(' ') || 'Unable to save entry.';
+      return;
+    }
+
+    if (response.status === 404 && isEdit) {
+      entries = entries.filter((item) => String(item.id) !== editId);
+      resetFormToAddMode();
+      document.getElementById('form-error').textContent = body.error || 'Entry not found.';
+      renderEntries();
+      return;
+    }
+
+    if (!response.ok) {
+      document.getElementById('form-error').textContent = body.error || 'Unable to save entry.';
+      return;
+    }
+
+    if (isEdit) {
+      const entryIndex = entries.findIndex((item) => String(item.id) === editId);
+      if (entryIndex !== -1) {
+        entries[entryIndex] = body;
+      }
+    } else {
+      entries.push(body);
+    }
+
+    resetFormToAddMode();
+    renderEntries();
+  } catch (error) {
+    document.getElementById('form-error').textContent =
+      "Couldn't save entry. Check that the Flask server is running.";
+  }
 });
 
 function resetFormToAddMode() {
@@ -297,6 +353,7 @@ function resetFormToAddMode() {
   requiredFieldIds.forEach((fieldId) => {
     clearFieldError(document.getElementById(fieldId));
   });
+  document.getElementById('form-error').textContent = '';
 }
 
 function fillFormForEdit(entry) {
