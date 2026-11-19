@@ -79,8 +79,8 @@ addProjectButton.addEventListener("click", async () => {
     card.dataset.projectId = project.id;
     const titleElement = document.createElement("h3");
     titleElement.textContent = project.title;
-    const descriptionElement = document.createElement("p");
-    descriptionElement.textContent = project.description;
+    const summaryElement = document.createElement("p");
+    summaryElement.textContent = project.summary;
     const authorElement = document.createElement("p");
     authorElement.textContent = `By ${project.author}`;
     const upvoteButton = document.createElement("button");
@@ -92,7 +92,7 @@ addProjectButton.addEventListener("click", async () => {
     likesElement.textContent = project.likes;
     card.append(
       titleElement,
-      descriptionElement,
+      summaryElement,
       authorElement,
       upvoteButton,
       likesElement,
