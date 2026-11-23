@@ -1,0 +1,6 @@
+flask
+Flask-SQLAlchemy
+openai==3.55.1
+python-dotenv
+pydantic
+requests==2.34.2
