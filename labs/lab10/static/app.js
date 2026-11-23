@@ -12,6 +12,7 @@ const draftPanel = document.querySelector("#github-draft-panel");
 const draftFeedback = document.querySelector("#github-draft-feedback");
 const githubFeedbackInput = document.querySelector("#github-feedback");
 const sendFeedbackButton = document.querySelector("#send-feedback-btn");
+const blindFeedbackButton = document.querySelector("#blind-feedback-btn");
 const approveDraftButton = document.querySelector("#approve-draft-btn");
 
 let githubSessionId = null;
@@ -225,6 +226,31 @@ sendFeedbackButton.addEventListener("click", async () => {
     renderGithubDraft(draft);
   } catch (error) {
     console.error("Unable to refine GitHub draft.", error);
+  }
+});
+
+blindFeedbackButton.addEventListener("click", async () => {
+  if (!githubSessionId) {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/projects/git-refine-blind", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        session_id: githubSessionId,
+        feedback: githubFeedbackInput.value,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`Blind draft refinement failed with status ${response.status}`);
+    }
+
+    const draft = await response.json();
+    renderGithubDraft(draft);
+  } catch (error) {
+    console.error("Unable to refine GitHub draft without history.", error);
   }
 });
 
