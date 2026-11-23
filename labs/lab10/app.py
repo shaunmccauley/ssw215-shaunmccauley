@@ -12,6 +12,7 @@ from ai_service import (
     draft_github_project,
     extract_project_details,
     get_github_draft,
+    refine_github_project_blind,
     refine_github_project,
 )
 from github_service import (
@@ -274,6 +275,28 @@ def git_refine_project():
         return jsonify({"error": "Session not found"}), 404
     try:
         draft = refine_github_project(session_id, str(feedback or "").strip())
+    except KeyError:
+        return jsonify({"error": "Session not found"}), 404
+    except AIRefusalError:
+        return jsonify({"error": "The AI provider refused the request"}), 422
+    except AIProviderError:
+        return jsonify({"error": "The AI provider could not be reached"}), 503
+
+    return jsonify(draft), 200
+
+
+@app.post("/api/projects/git-refine-blind")
+def git_refine_blind_project():
+    data = request.get_json(silent=True)
+    session_id = data.get("session_id") if isinstance(data, dict) else None
+    feedback = data.get("feedback") if isinstance(data, dict) else None
+
+    if not isinstance(session_id, str):
+        return jsonify({"error": "Session not found"}), 404
+    try:
+        draft = refine_github_project_blind(
+            session_id, str(feedback or "").strip()
+        )
     except KeyError:
         return jsonify({"error": "Session not found"}), 404
     except AIRefusalError:

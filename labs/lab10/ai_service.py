@@ -111,6 +111,31 @@ def refine_github_project(session_id, feedback):
     return draft
 
 
+def refine_github_project_blind(session_id, feedback):
+    if session_id not in sessions:
+        raise KeyError(session_id)
+    if client is None:
+        raise AIProviderError("OPENAI_API_KEY is not configured")
+
+    try:
+        completion = client.beta.chat.completions.parse(
+            model="gpt-4o-mini",
+            temperature=0.1,
+            messages=[{"role": "user", "content": feedback}],
+            response_format=GitHubProjectDraft,
+        )
+    except Exception as error:
+        raise AIProviderError("The provider request failed") from error
+
+    message = completion.choices[0].message
+    if getattr(message, "refusal", None):
+        raise AIRefusalError(message.refusal)
+    if message.parsed is None:
+        raise AIProviderError("The provider returned no structured result")
+
+    return normalize_github_draft(message.parsed)
+
+
 def get_github_draft(session_id):
     if session_id not in sessions:
         raise KeyError(session_id)
